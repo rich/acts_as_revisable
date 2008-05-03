@@ -2,39 +2,20 @@ require 'acts_as_revisable/version'
 
 AUTHOR = 'Rich Cavanaugh'  # can also be an array of Authors
 EMAIL = "rich@fatjam.com"
-DESCRIPTION = "description of gem"
+DESCRIPTION = "Rails plugin to track revisions to your models."
 GEM_NAME = 'acts_as_revisable' # what ppl will type to install your gem
-RUBYFORGE_PROJECT = 'acts_as_revisable' # The unix name for your project
-HOMEPATH = "http://github.com/rich/acts_as_revisable"
-DOWNLOAD_PATH = "http://rubyforge.org/projects/#{RUBYFORGE_PROJECT}"
+HOMEPATH = "http://github.com/rich/acts_as_revisable/tree/master"
+DOWNLOAD_PATH = "http://github.com/rich/acts_as_revisable/tree/master"
 EXTRA_DEPENDENCIES = [
- ['activesupport', '>= 2.1'], ['activerecord', '>= 2.1']
 ]    # An array of rubygem dependencies [name, version]
 
 @config_file = "~/.rubyforge/user-config.yml"
 @config = nil
-RUBYFORGE_USERNAME = "unknown"
-def rubyforge_username
-  unless @config
-    begin
-      @config = YAML.load(File.read(File.expand_path(@config_file)))
-    rescue
-      puts <<-EOS
-ERROR: No rubyforge config file found: #{@config_file}
-Run 'rubyforge setup' to prepare your env for access to Rubyforge
- - See http://newgem.rubyforge.org/rubyforge.html for more details
-      EOS
-      exit
-    end
-  end
-  RUBYFORGE_USERNAME.replace @config["username"]
-end
-
 
 REV = nil
 # UNCOMMENT IF REQUIRED:
 # REV = YAML.load(`svn info`)['Revision']
-VERS = ActsAsRevisable::VERSION::STRING + (REV ? ".#{REV}" : "")
+VERS = FatJam::ActsAsRevisable::VERSION::STRING + (REV ? ".#{REV}" : "")
 RDOC_OPTS = ['--quiet', '--title', 'acts_as_revisable documentation',
     "--opname", "index.html",
     "--line-numbers",
@@ -55,7 +36,6 @@ $hoe = Hoe.new(GEM_NAME, VERS) do |p|
   p.description = DESCRIPTION
   p.summary = DESCRIPTION
   p.url = HOMEPATH
-  p.rubyforge_name = RUBYFORGE_PROJECT if RUBYFORGE_PROJECT
   p.test_globs = ["test/**/test_*.rb"]
   p.clean_globs |= ['**/.*.sw?', '*.gem', '.config', '**/.DS_Store']  #An array of file patterns to delete on clean.
 
@@ -67,7 +47,5 @@ $hoe = Hoe.new(GEM_NAME, VERS) do |p|
   end
 
 CHANGES = $hoe.paragraphs_of('History.txt', 0..1).join("\\n\\n")
-PATH    = (RUBYFORGE_PROJECT == GEM_NAME) ? RUBYFORGE_PROJECT : "#{RUBYFORGE_PROJECT}/#{GEM_NAME}"
-$hoe.remote_rdoc_dir = File.join(PATH.gsub(/^#{RUBYFORGE_PROJECT}\/?/,''), 'rdoc')
 $hoe.rsync_args = '-av --delete --ignore-errors'
 $hoe.spec.post_install_message = File.open(File.dirname(__FILE__) + "/../PostInstall.txt").read rescue ""

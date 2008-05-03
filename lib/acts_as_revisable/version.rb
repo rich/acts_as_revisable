@@ -1,9 +1,11 @@
-module ActsAsRevisable #:nodoc:
-  module VERSION #:nodoc:
-    MAJOR = 0
-    MINOR = 5
-    TINY  = 0
+module FatJam #:nodoc:
+  module ActsAsRevisable
+    module VERSION #:nodoc:
+      MAJOR = 0
+      MINOR = 5
+      TINY  = 0
 
-    STRING = [MAJOR, MINOR, TINY].join('.')
+      STRING = [MAJOR, MINOR, TINY].join('.')
+    end
   end
 end
