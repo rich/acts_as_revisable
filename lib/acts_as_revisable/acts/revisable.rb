@@ -207,7 +207,7 @@ module FatJam
         end
       
         def revision_class_name
-          self.revisable_options.revision_class || "#{self.class_name}Revision"
+          self.revisable_options.revision_class_name || "#{self.class_name}Revision"
         end
       
         def revision_class

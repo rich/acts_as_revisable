@@ -14,7 +14,7 @@ module FatJam
             send(assoc.macro, assoc.name, options)
           end
         
-          define_callbacks :before_restore, :after_restore, :before_branch, :after_branch
+          define_callbacks :before_restore, :after_restore
         
           belongs_to :current_revision, :class_name => revisable_class_name, :foreign_key => :revisable_original_id
           belongs_to revisable_class_name.downcase.to_sym, :class_name  => revisable_class_name, :foreign_key => :revisable_original_id
@@ -48,7 +48,7 @@ module FatJam
             
       module ClassMethods
         def revisable_class_name
-          self.revisable_options.revisable_class || self.class_name.gsub(/Revision/, '')
+          self.revisable_options.revisable_class_name || self.class_name.gsub(/Revision/, '')
         end
       
         def revisable_class

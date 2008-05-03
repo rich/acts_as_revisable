@@ -1,32 +1,173 @@
 = acts_as_revisable
 
-* FIX (url)
+http://github.com/rich/acts_as_revisable/tree/master
 
 == DESCRIPTION:
 
-FIX (describe your package)
+acts_as_revisable enables revision tracking, querying, reverting and branching of ActiveRecord models. It does this while providing more Rails-like API than similar plugins. This includes extensions of standard ActiveRecord methods and numerous custom callbacks for the entire AAR life-cycle.
 
-== FEATURES/PROBLEMS:
+This plugin wouldn't exist without Rick Olsen's acts_as_versioned. AAV has been a critical part of practically every Rails project I've developed. It's only through extensive usage of AAV that the concepts for AAR came about.
 
-* FIX (list of features or problems)
+== FEATURES:
+
+* Both the revisable and revision models must be explicitly defined.
+  Yes, this is a feature. The less magic needed the better. This allows you to build up your revision models just as you would any other.
+
+* Numerous custom callbacks for both revisable and revision models.
+  * revisable models
+    * before_revise
+    * after_revise
+    * before_revert
+    * after_revert
+    * before_changeset
+    * after_changeset
+    * after_branch_created
+  * revision models
+    * before_restore
+    * after_restore
+  * both revisable and revision models
+    * before_branch
+    * after_branch
+  These work like any other ActiveRecord callbacks. The before_* callbacks can stop the the action. This uses the Callbacks module in ActiveSupport.
+* Works with a single table.
+  * Provides migration generators to add the revisable columns.
+* Grouping several revisable actions into a single revision (changeset).
+* Monitor all or just specified columns to trigger a revision.
+* Clone all or specified associations to the revision model.
+* Uses ActiveRecord's dirty attribute tracking.
+* Several ways to find revisions including:
+  * revision number
+  * relative keywords (:previous, :last)
+  * timestamp
+* Reverting
+* Branching
+* Selectively disable revision tracking
+* Naming revisions  
 
 == SYNOPSIS:
 
-  FIX (code sample of usage)
+Given a simple model:
 
+  class Project < ActiveRecord::Base
+    # columns: id, name, unimportant, created_at
+  end
+
+Let's make the projects table revisable:
+
+  ruby script/generate revisable_migration Project
+  rake db:migrate
+
+Now Project itself:
+  
+  class Project < ActiveRecord::Base
+    has_one :owner
+    
+    acts_as_revisable do
+      revision_class_name "Session"
+      except :unimportant
+    end
+  end
+
+Create the revision class:
+
+  class Session < ActiveRecord::Base
+    # we can accept the more standard hash syntax
+    acts_as_revision :revisable_class_name => "Project", :clone_associations => :all
+  end
+
+Some example usage:
+
+  @project = Project.create(:name => "Rich", :unimportant => "some text")
+  @project.revision_number        # => 0
+
+  @project.update_attribute(:unimportant, "more text")
+  @project.revision_number        # => 0
+  
+  @project.name = "Stephen"
+  @project.save(:without_revision => true)
+  @project.name                   # => Stephen
+  @project.revision_number        # => 0
+  
+  @project.name = "Sam"
+  @project.save(:revision_name => "Changed name")
+  @project.revision_number        # => 1
+
+Navigating revisions:
+
+  @previous = @project.find_revision(:previous)
+  # or
+  @previous = @project.revisions.first
+  
+  @previous.name                  # => Rich
+  @previous.current_revision.name # => Sam
+  @previous.project.name          # => Sam
+  @previous.revision_name         # => Changed name
+
+Reverting:
+
+  @project.revert_to!(:previous)
+  @project.revision_number        # => 2
+  @project.name                   # => Rich
+  
+  @project.revert_to!(1, :without_revision => true)
+  @project.revision_number        # => 2
+  @project.name                   # => Sam
+
+Branching
+  
+  @branch = @project.branch(:name => "Bruno")
+  @branch.revision_number         # => 0
+  @branch.branch_source.name      # => Sam
+
+Associations have been cloned:
+
+  @project.owner === @previous.owner   # => true
+
+Maybe we don't want to be able to branch from revisions:
+
+  class Session < ActiveRecord::Base
+    # assuming we still have the other code from Session above
+    
+    before_branch do
+      false
+    end
+  end
+  
+  @project.revisions.first.branch # Raises an exception
+  @project.branch                 # works as expected
+  
+If the owner isn't set let's prevent reverting:
+
+  class Project < ActiveRecord::Base
+    # assuming we still have the other code from Project above
+    
+    before_revert :check_owner_befor_reverting
+    def check_owner_befor_reverting
+      false unless self.owner?
+    end
+  end
+  
 == REQUIREMENTS:
 
-* FIX (list of requirements)
+This plugin currently depends on Edge Rails, ActiveRecord and ActiveSupport specifically, which will eventually become Rails 2.1.
 
 == INSTALL:
 
-* FIX (sudo gem install, anything else)
+acts_as_revisable uses Rails' new found ability to use gems as plugins. Installing AAR is as simple as installing a gem.
+
+You may need to add GitHub as a Gem source:
+
+  sudo gem sources -a http://gems.github.com/
+
+Then it can be installed as usual:
+
+  sudo gem install rich-acts_as_revisable
 
 == LICENSE:
 
 (The MIT License)
 
-Copyright (c) 2008 FIX
+Copyright (c) 2008
 
 Permission is hereby granted, free of charge, to any person obtaining
 a copy of this software and associated documentation files (the
