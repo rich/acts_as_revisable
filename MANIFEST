@@ -12,7 +12,9 @@ lib/acts_as_revisable/base.rb
 lib/acts_as_revisable/options.rb
 lib/acts_as_revisable/quoted_columns.rb
 lib/acts_as_revisable/version.rb
+lib/acts_as_revisable/clone_associations.rb
 rails/init.rb
 spec/acts_as_revisable_spec.rb
 spec/spec.opts
 spec/spec_helper.rb
+spec/aar_options_spec.rb
