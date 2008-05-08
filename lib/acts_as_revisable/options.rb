@@ -1,6 +1,9 @@
 module FatJam
   module ActsAsRevisable
-    class Options      
+    # This class provides for a flexible method of setting
+    # options and querying them. This is especially useful
+    # for giving users flexibility when using your plugin.
+    class Options
       def initialize(*options, &block)
         @options = options.extract_options!
         instance_eval(&block) if block_given?

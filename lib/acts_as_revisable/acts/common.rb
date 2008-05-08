@@ -28,7 +28,7 @@ module FatJam
           raise ActiveRecord::RecordNotSaved
         end
 
-        options = args.extract_options! || {}
+        options = args.extract_options!
         options[:revisable_branched_from_id] = self.id
         self.class.column_names.each do |col|
           next unless self.class.revisable_should_clone_column? col
@@ -44,6 +44,7 @@ module FatJam
       def original_id
         self[:revisable_original_id] || self[:id]
       end
+      
       module ClassMethods      
         def revisable_should_clone_column?(col)
           return false if (FatJam::REVISABLE_SYSTEM_COLUMNS + FatJam::REVISABLE_UNREVISABLE_COLUMNS).member? col

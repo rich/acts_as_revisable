@@ -10,7 +10,7 @@ module FatJam
           set_table_name(revisable_class.table_name)
           acts_as_scoped_model :find => {:conditions => {:revisable_is_current => false}}
           
-          FatJam::ActsAsRevisable::CloneAssociations.clone(revisable_class, self)
+          CloneAssociations.clone(revisable_class, self)
         
           define_callbacks :before_restore, :after_restore
         

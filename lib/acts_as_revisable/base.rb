@@ -36,7 +36,7 @@ module FatJam
           class << self
             attr_accessor :revisable_options
           end
-          options = args.grep(Hash).first || {}
+          options = args.extract_options!
           @revisable_options = FatJam::ActsAsRevisable::Options.new(options, &block)
         end
     end

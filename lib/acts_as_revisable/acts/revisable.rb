@@ -87,7 +87,7 @@ module FatJam
           raise ActiveRecord::RecordNotSaved
         end
       
-        options = args.extract_options! || {}
+        options = args.extract_options!
       
         rev = case args.first
         when self.class.revision_class
@@ -121,9 +121,9 @@ module FatJam
       end
     
       def revert_to_without_revision!(*args)
-        args << {} if args.grep(Hash).blank?
-        args.grep(Hash).first.update({:without_revision => true})
-        revert_to!(*args)
+        options = args.extract_options!
+        options.update({:without_revision => true})
+        revert_to!(*(args << options))
       end
         
       def revise!
@@ -177,7 +177,7 @@ module FatJam
       
       module ClassMethods      
         def with_scope_with_revisable(*args, &block)
-          options = args.grep(Hash).first[:find]
+          options = args.extract_options![:find]
 
           if options && options.delete(:with_revisions)
             without_model_scope do
@@ -189,7 +189,7 @@ module FatJam
         end
       
         def find_with_revisable(*args)
-          options = args.grep(Hash).first
+          options = args.extract_options!
         
           if options && options.delete(:with_revisions)
             without_model_scope do
@@ -201,9 +201,9 @@ module FatJam
         end
       
         def find_with_revisions(*args)
-          args << {} if args.grep(Hash).blank?
-          args.grep(Hash).first.update({:with_revisions => true})
-          find_with_revisable(*args)
+          options = args.extract_options!
+          options.update({:with_revisions => true})
+          find_with_revisable(*(args << options))
         end
       
         def revision_class_name

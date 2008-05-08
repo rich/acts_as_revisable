@@ -44,7 +44,7 @@ module FatJam
           end
         end
         self.scoped_model_enabled = true
-        self.scoped_model_static_scope = args.grep(Hash).first
+        self.scoped_model_static_scope = args.extract_options!
       end
     end
   end
