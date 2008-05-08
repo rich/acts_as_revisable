@@ -54,8 +54,21 @@ describe FatJam::ActsAsRevisable do
       @project.revisions.size.should == 1
     end
     
+    
     it "should have the original revision's data" do
       @project.revisions.first.name.should == "Rich"
     end
+  end
+  
+  describe "with excluded columns modified" do
+    before(:each) do
+      @project.unimportant = "a new value"
+      @project.save
+    end
+    
+    it "should maintain the revision_number at zero" do
+      @project.revision_number.should be_zero
+    end
+    
   end
 end
