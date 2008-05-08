@@ -10,19 +10,19 @@ shared_examples_for "common Options usage" do
   end
   
   it "should return false for unset query option" do
-    @options.unset?.should be_false
+    @options.should_not be_unset_value
   end
   
   it "should return true for a query option set to true" do
-    @options.yes?.should be_true
+    @options.should be_yes
   end
   
   it "should return false for a query option set to false" do
-    @options.no?.should be_false
+    @options.should_not be_no
   end
   
   it "should return false for a query on a non-boolean value" do
-    @options.one?.should be_false
+    @options.should_not be_one
   end
   
   it "should return an array when passed one" do
