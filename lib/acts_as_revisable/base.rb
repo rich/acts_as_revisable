@@ -12,7 +12,9 @@ module FatJam
       base.send(:extend, ClassMethods)
     end
     
-    module ClassMethods    
+    module ClassMethods
+      
+      #
       def acts_as_revisable(*args, &block)
         revisable_shared_setup(args, block)
         self.send(:include, FatJam::ActsAsRevisable::Revisable)

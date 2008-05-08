@@ -1,3 +1,5 @@
+require 'acts_as_revisable/clone_associations'
+
 module FatJam
   module ActsAsRevisable
     module Revision
@@ -7,12 +9,8 @@ module FatJam
         base.instance_eval do
           set_table_name(revisable_class.table_name)
           acts_as_scoped_model :find => {:conditions => {:revisable_is_current => false}}
-          revision_cloned_associations.each do |key|
-            assoc = revisable_class.reflect_on_association(key)
-            options = assoc.options.clone
-            options[:foreign_key] ||= "revisable_original_id"
-            send(assoc.macro, assoc.name, options)
-          end
+          
+          FatJam::ActsAsRevisable::CloneAssociations.clone(revisable_class, self)
         
           define_callbacks :before_restore, :after_restore
         
