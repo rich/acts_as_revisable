@@ -47,7 +47,7 @@ module FatJam
       
       module ClassMethods      
         def revisable_should_clone_column?(col)
-          return false if (FatJam::REVISABLE_SYSTEM_COLUMNS + FatJam::REVISABLE_UNREVISABLE_COLUMNS).member? col
+          return false if (REVISABLE_SYSTEM_COLUMNS + REVISABLE_UNREVISABLE_COLUMNS).member? col
           true
         end
 

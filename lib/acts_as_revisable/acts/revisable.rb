@@ -224,8 +224,8 @@ module FatJam
           return @aa_revisable_columns ||= [self.revisable_options.only].flatten.map(&:to_s).map(&:downcase) unless self.revisable_options.only.blank?
                     
           except = [self.revisable_options.except].flatten || []
-          except += FatJam::REVISABLE_SYSTEM_COLUMNS
-          except += FatJam::REVISABLE_UNREVISABLE_COLUMNS
+          except += REVISABLE_SYSTEM_COLUMNS
+          except += REVISABLE_UNREVISABLE_COLUMNS
           except.uniq!
 
           @aa_revisable_columns ||= (column_names - except.map(&:to_s)).flatten.map(&:downcase)
