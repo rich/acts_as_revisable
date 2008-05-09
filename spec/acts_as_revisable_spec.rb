@@ -42,8 +42,7 @@ describe FatJam::ActsAsRevisable do
   
   describe "with revisions" do
     before(:each) do
-      @project.name = "Stephen"
-      @project.save
+      @project.update_attribute(:name, "Stephen")
     end
     
     it "should have a revision_number of one" do
@@ -54,21 +53,26 @@ describe FatJam::ActsAsRevisable do
       @project.revisions.size.should == 1
     end
     
+    it "should return an instance of the revision class" do
+      @project.revisions.first.should be_an_instance_of(Session)
+    end
     
     it "should have the original revision's data" do
       @project.revisions.first.name.should == "Rich"
-    end
+    end    
   end
   
   describe "with excluded columns modified" do
     before(:each) do
-      @project.unimportant = "a new value"
-      @project.save
+      @project.update_attribute(:unimportant, "a new value")
     end
     
     it "should maintain the revision_number at zero" do
       @project.revision_number.should be_zero
     end
     
+    it "should not have any revisions" do
+      @project.revisions.should be_empty
+    end
   end
 end
