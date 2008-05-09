@@ -1,6 +1,6 @@
 Gem::Specification.new do |s|
   s.name = "acts_as_revisable"
-  s.version = "0.6.1"
+  s.version = "0.6.2"
   s.summary = "acts_as_revisable enables revision tracking, querying, reverting and branching of ActiveRecord models. Inspired by acts_as_versioned."
   s.email = "cavanaugh@fatjam.com"
   s.homepage = "http://github.com/fatjam/acts_as_revisable/tree/master"
