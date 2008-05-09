@@ -163,6 +163,10 @@ Then it can be installed as usual:
 
   sudo gem install rich-acts_as_revisable
 
+Once the gem is installed you'll want to activate it in your Rails app by adding the following line to config/environment.rb:
+
+  config.gem "rich-acts_as_revisable", :lib => "acts_as_revisable", :source => "http://gems.github.com"
+
 == LICENSE:
 
 (The MIT License)
