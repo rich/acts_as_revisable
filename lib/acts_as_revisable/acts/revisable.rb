@@ -32,10 +32,16 @@ module FatJam
       def before_revisable_create
         self[:revisable_is_current] = true
       end
-    
-      def before_revisable_update
-        return unless @aa_revisable_force_revision == true || (self.changed? && !(@aa_revisable_no_revision === true) && !(self.changed.map(&:downcase) & self.class.revisable_columns).blank?)
       
+      def should_revise?
+        return true if @aa_revisable_force_revision == true
+        return false if @aa_revisable_no_revision == true
+        return false unless self.changed?
+        !(self.changed.map(&:downcase) & self.class.revisable_columns).blank?
+      end
+      
+      def before_revisable_update
+        return unless should_revise?
         return false unless run_callbacks(:before_revise) { |r, o| r == false}
       
         @revisable_revision = self.to_revision
@@ -88,7 +94,7 @@ module FatJam
         end
       
         options = args.extract_options!
-      
+    
         rev = case args.first
         when self.class.revision_class
           args.first
@@ -101,19 +107,19 @@ module FatJam
         when Time
           revisions.find(:first, :conditions => ["? >= ? and ? <= ?", :revisable_revised_at, args.first, :revisable_current_at, args.first])
         end
-      
+    
         unless rev.run_callbacks(:before_restore) { |r, o| r == false}
           raise ActiveRecord::RecordNotSaved
         end
-      
+    
         self.class.column_names.each do |col|
           next unless self.class.revisable_should_clone_column? col
           self[col] = rev[col]
         end
-      
+    
         @aa_revisable_no_revision = true if options.delete :without_revision
         @aa_revisable_new_params = options
-      
+
         returning(@aa_revisable_no_revision ? save! : revise!) do
           rev.run_callbacks(:after_restore)
           run_callbacks(:after_revert)
@@ -129,9 +135,11 @@ module FatJam
       def revise!
         return if in_revision?
         
-        @aa_revisable_force_revision = true
-        in_revision!
-        returning(save!) do
+        begin
+          @aa_revisable_force_revision = true
+          in_revision!
+          save!
+        ensure
           in_revision!(false)
           @aa_revisable_force_revision = false
         end
@@ -151,7 +159,7 @@ module FatJam
         aa_revisable_current_revisions[key] = val
         aa_revisable_current_revisions.delete(key) unless val
       end
-      
+            
       def changeset(&block)
         return unless block_given?
         
@@ -161,11 +169,14 @@ module FatJam
           raise ActiveRecord::RecordNotSaved
         end
         
-        in_revision!
+        begin
+          in_revision!
         
-        returning(yield(self)) do
-          in_revision!(false)
-          run_callbacks(:after_changeset)
+          returning(yield(self)) do
+            run_callbacks(:after_changeset)
+          end
+        ensure
+          in_revision!(false)          
         end
       end
       
@@ -177,7 +188,7 @@ module FatJam
       
       module ClassMethods      
         def with_scope_with_revisable(*args, &block)
-          options = args.extract_options![:find]
+          options = (args.grep(Hash).first || {})[:find]
 
           if options && options.delete(:with_revisions)
             without_model_scope do
@@ -189,7 +200,7 @@ module FatJam
         end
       
         def find_with_revisable(*args)
-          options = args.extract_options!
+          options = args.grep(Hash).first
         
           if options && options.delete(:with_revisions)
             without_model_scope do
@@ -201,9 +212,9 @@ module FatJam
         end
       
         def find_with_revisions(*args)
-          options = args.extract_options!
-          options.update({:with_revisions => true})
-          find_with_revisable(*(args << options))
+          args << {} if args.grep(Hash).blank?
+          args.grep(Hash).first.update({:with_revisions => true})
+          find_with_revisable(*args)
         end
       
         def revision_class_name
