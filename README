@@ -1,6 +1,6 @@
 = acts_as_revisable
 
-http://github.com/rich/acts_as_revisable/tree/master
+http://github.com/fatjam/acts_as_revisable/tree/master
 
 == DESCRIPTION:
 
@@ -161,11 +161,11 @@ You may need to add GitHub as a Gem source:
 
 Then it can be installed as usual:
 
-  sudo gem install rich-acts_as_revisable
+  sudo gem install fatjam-acts_as_revisable
 
 Once the gem is installed you'll want to activate it in your Rails app by adding the following line to config/environment.rb:
 
-  config.gem "rich-acts_as_revisable", :lib => "acts_as_revisable", :source => "http://gems.github.com"
+  config.gem "fatjam-acts_as_revisable", :lib => "acts_as_revisable", :source => "http://gems.github.com"
 
 == LICENSE:
 
