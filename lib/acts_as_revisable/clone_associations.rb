@@ -1,3 +1,5 @@
+# This module encapsulates the methods used by ActsAsRevisable
+# for cloning associations from one model to another.
 module FatJam
   module ActsAsRevisable
     module CloneAssociations

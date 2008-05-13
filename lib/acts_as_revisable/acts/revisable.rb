@@ -28,62 +28,7 @@ module FatJam
           after_update :after_revisable_update
         end
       end
-    
-      def before_revisable_create
-        self[:revisable_is_current] = true
-      end
-      
-      def should_revise?
-        return true if @aa_revisable_force_revision == true
-        return false if @aa_revisable_no_revision == true
-        return false unless self.changed?
-        !(self.changed.map(&:downcase) & self.class.revisable_columns).blank?
-      end
-      
-      def before_revisable_update
-        return unless should_revise?
-        return false unless run_callbacks(:before_revise) { |r, o| r == false}
-      
-        @revisable_revision = self.to_revision
-      end
-    
-      def after_revisable_update
-        if @revisable_revision
-          @revisable_revision.save
-          @aa_revisable_was_revised = true
-          revisions.reload
-          run_callbacks(:after_revise)
-        end
-      end
-    
-      def to_revision
-        rev = self.class.revision_class.new(@aa_revisable_new_params)
-      
-        rev.revisable_original_id = self.id
-      
-        self.class.column_names.each do |col|
-          next unless self.class.revisable_should_clone_column? col
-          val = self.send("#{col}_changed?") ? self.send("#{col}_was") : self.send(col)
-          rev.send("#{col}=", val)
-        end
-
-        @aa_revisable_new_params = nil
-      
-        rev
-      end
-    
-      def save_with_revisable!(*args)
-        @aa_revisable_new_params ||= args.extract_options!
-        @aa_revisable_no_revision = true if @aa_revisable_new_params.delete :without_revision
-        save_without_revisable!(*args)
-      end
-    
-      def save_with_revisable(*args)
-        @aa_revisable_new_params ||= args.extract_options!
-        @aa_revisable_no_revision = true if @aa_revisable_new_params.delete :without_revision
-        save_without_revisable(*args)
-      end
-    
+            
       def find_revision(number)
         revisions.find_by_revisable_number(number)
       end
@@ -149,17 +94,19 @@ module FatJam
         @aa_revisable_was_revised || false
       end
       
-      def in_revision?
-        key = self.read_attribute(self.class.primary_key)
-        aa_revisable_current_revisions[key] || false
-      end
-      
-      def in_revision!(val=true)
-        key = self.read_attribute(self.class.primary_key)
-        aa_revisable_current_revisions[key] = val
-        aa_revisable_current_revisions.delete(key) unless val
-      end
-            
+      # Groups statements that could trigger several revisions into
+      # a single revision. The revision is created once #save is called.
+      # 
+      #   @project.revision_number # => 1
+      #   @project.changeset do |project|
+      #     # each one of the following statements would 
+      #     # normally trigger a revision
+      #     project.update_attribute(:name, "new name")
+      #     project.revise!
+      #     project.revise!
+      #   end
+      #   @project.save
+      #   @project.revision_number # => 2
       def changeset(&block)
         return unless block_given?
         
@@ -170,13 +117,21 @@ module FatJam
         end
         
         begin
+          @aa_revisable_force_revision = true
           in_revision!
         
           returning(yield(self)) do
             run_callbacks(:after_changeset)
           end
         ensure
-          in_revision!(false)          
+          in_revision!(false)       
+        end
+      end
+      
+      # Same as +changeset+ except it also saves
+      def changeset!(&block)
+        returning(changeset(&block)) do
+          save!
         end
       end
       
@@ -184,6 +139,73 @@ module FatJam
         revisions.first.revisable_number
       rescue NoMethodError
         0
+      end
+      
+      def save_with_revisable!(*args)
+        @aa_revisable_new_params ||= args.extract_options!
+        @aa_revisable_no_revision = true if @aa_revisable_new_params.delete :without_revision
+        save_without_revisable!(*args)
+      end
+    
+      def save_with_revisable(*args)
+        @aa_revisable_new_params ||= args.extract_options!
+        @aa_revisable_no_revision = true if @aa_revisable_new_params.delete :without_revision
+        save_without_revisable(*args)
+      end
+      
+      def before_revisable_create
+        self[:revisable_is_current] = true
+      end
+    
+      def should_revise?
+        return true if @aa_revisable_force_revision == true
+        return false if @aa_revisable_no_revision == true
+        return false unless self.changed?
+        !(self.changed.map(&:downcase) & self.class.revisable_columns).blank?
+      end
+    
+      def before_revisable_update
+        return unless should_revise?
+        return false unless run_callbacks(:before_revise) { |r, o| r == false}
+    
+        @revisable_revision = self.to_revision
+      end
+  
+      def after_revisable_update
+        if @revisable_revision
+          @revisable_revision.save
+          @aa_revisable_was_revised = true
+          revisions.reload
+          run_callbacks(:after_revise)
+        end
+        @aa_revisable_force_revision = false
+      end
+    
+      def in_revision?
+        key = self.read_attribute(self.class.primary_key)
+        aa_revisable_current_revisions[key] || false
+      end
+
+      def in_revision!(val=true)
+        key = self.read_attribute(self.class.primary_key)
+        aa_revisable_current_revisions[key] = val
+        aa_revisable_current_revisions.delete(key) unless val
+      end
+      
+      def to_revision
+        rev = self.class.revision_class.new(@aa_revisable_new_params)
+
+        rev.revisable_original_id = self.id
+
+        self.class.column_names.each do |col|
+          next unless self.class.revisable_should_clone_column? col
+          val = self.send("#{col}_changed?") ? self.send("#{col}_was") : self.send(col)
+          rev.send("#{col}=", val)
+        end
+
+        @aa_revisable_new_params = nil
+
+        rev
       end
       
       module ClassMethods      

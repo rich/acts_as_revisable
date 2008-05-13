@@ -1,3 +1,15 @@
+# This module is more about the pretty than anything else. This allows
+# you to use symbols for column names in a conditions hash.
+#
+#   User.find(:all, :conditions => ["? = ?", :name, "sam"])
+# 
+# Would generate:
+# 
+#   select * from users where "users"."name" = 'sam'
+# 
+# This is consistent with Rails and Ruby where symbols are used to
+# represent methods. Only a symbol matching a column name will 
+# trigger this beavior.
 module FatJam::QuotedColumnConditions
   def self.included(base)
     base.send(:extend, ClassMethods)
