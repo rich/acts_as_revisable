@@ -1,7 +1,7 @@
 module FatJam
   module ActsAsRevisable
     module Common
-      def self.included(base)
+      def self.included(base) #:nodoc:
         base.send(:extend, ClassMethods)
 
         class << base
@@ -17,12 +17,21 @@ module FatJam
         base.alias_method_chain :branch_source, :open_scope  
       end
 
-      def branch_source_with_open_scope(*args, &block)
+      def branch_source_with_open_scope(*args, &block) #:nodoc:
         self.class.without_model_scope do
           branch_source_without_open_scope(*args, &block)
         end
       end
-
+      
+      # Branch the +Revisable+ or +Revision+ and return the new 
+      # +revisable+ instance. The instance has not been saved yet.
+      # 
+      # This method triggers three callbacks:
+      # * +before_branch+ is called on the +Revisable+ or +Revision+ that is 
+      #   being branched
+      # * +after_branch+ is called on the +Revisable+ or +Revision+ that is 
+      #   being branched
+      # * +after_branch_created+ is called on the newly created +Revisable+ instance.
       def branch(*args, &block)
         unless run_callbacks(:before_branch) { |r, o| r == false}
           raise ActiveRecord::RecordNotSaved
@@ -42,12 +51,15 @@ module FatJam
         end
       end
       
+      # Same as #branch except it calls #save! on the new +Revisable+ instance.
       def branch!(*args)
         branch(*args) do |br|
           br.save!
         end
       end
       
+      # When called on a +Revision+ it returns the original id. When
+      # called on a +Revisable+ it returns the id.
       def original_id
         self[:revisable_original_id] || self[:id]
       end

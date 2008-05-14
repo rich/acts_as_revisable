@@ -29,6 +29,7 @@ module FatJam
         end
       end
       
+      # Find a +Revision+ by revision_number.
       def find_revision(number)
         revisions.find_by_revisable_number(number)
       end
@@ -88,7 +89,8 @@ module FatJam
         options.update({:without_revision => true})
         revert_to!(*(args << options))
       end
-        
+      
+      # Force a revision whether or not any columns have been modified.
       def revise!
         return if in_revision?
         
@@ -147,6 +149,7 @@ module FatJam
         end
       end
       
+      # Returns the current revision_number or 0 if there are no revisions.
       def revision_number
         revisions.first.revisable_number
       rescue NoMethodError
@@ -165,25 +168,27 @@ module FatJam
         save_without_revisable(*args)
       end
       
-      def before_revisable_create
+      # Set some defaults for a newly created +Revisable+ instance.
+      def before_revisable_create #:nodoc:
         self[:revisable_is_current] = true
       end
-    
-      def should_revise?
+      
+      # Checks whether or not a +Revisable+ should be revised.
+      def should_revise? #:nodoc:
         return true if @aa_revisable_force_revision == true
         return false if @aa_revisable_no_revision == true
         return false unless self.changed?
         !(self.changed.map(&:downcase) & self.class.revisable_columns).blank?
       end
     
-      def before_revisable_update
+      def before_revisable_update #:nodoc:
         return unless should_revise?
         return false unless run_callbacks(:before_revise) { |r, o| r == false}
     
         @revisable_revision = self.to_revision
       end
   
-      def after_revisable_update
+      def after_revisable_update #:nodoc:
         if @revisable_revision
           @revisable_revision.save
           @aa_revisable_was_revised = true
@@ -198,13 +203,18 @@ module FatJam
         aa_revisable_current_revisions[key] || false
       end
 
-      def in_revision!(val=true)
+      # Manages the internal state of a +Revisable+ controlling 
+      # whether or not a record is being revised. This works across
+      # instances and is keyed on primary_key.
+      def in_revision!(val=true) #:nodoc:
         key = self.read_attribute(self.class.primary_key)
         aa_revisable_current_revisions[key] = val
         aa_revisable_current_revisions.delete(key) unless val
       end
       
-      def to_revision
+      # This returns a new +Revision+ instance with all the appropriate
+      # values initialized.
+      def to_revision #:nodoc:
         rev = self.class.revision_class.new(@aa_revisable_new_params)
 
         rev.revisable_original_id = self.id
