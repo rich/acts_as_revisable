@@ -13,7 +13,7 @@
 module FatJam::QuotedColumnConditions
   def self.included(base)
     base.send(:extend, ClassMethods)
-    
+
     class << base
       alias_method_chain :quote_bound_value, :quoted_column
     end
@@ -24,14 +24,7 @@ module FatJam::QuotedColumnConditions
       if value.is_a?(Symbol) && column_names.member?(value.to_s)
         # code borrowed from sanitize_sql_hash_for_conditions
         attr = value.to_s
-
-        # Extract table name from qualified attribute names.
-        if attr.include?('.')
-          table_name, attr = attr.split('.', 2)
-          table_name = connection.quote_table_name(table_name)
-        else
-          table_name = quoted_table_name
-        end
+        table_name = quoted_table_name
         
         return "#{table_name}.#{connection.quote_column_name(attr)}"
       end

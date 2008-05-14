@@ -28,12 +28,12 @@ module FatJam
           after_update :after_revisable_update
         end
       end
-            
+      
       def find_revision(number)
         revisions.find_by_revisable_number(number)
       end
       
-      def revert_to!(*args)
+      def revert_to(*args, &block)
         unless run_callbacks(:before_revert) { |r, o| r == false}
           raise ActiveRecord::RecordNotSaved
         end
@@ -64,13 +64,19 @@ module FatJam
     
         @aa_revisable_no_revision = true if options.delete :without_revision
         @aa_revisable_new_params = options
-
-        returning(@aa_revisable_no_revision ? save! : revise!) do
-          rev.run_callbacks(:after_restore)
-          run_callbacks(:after_revert)
-        end
+        
+        yield(self) if block_given?
+        
+        rev.run_callbacks(:after_restore)
+        run_callbacks(:after_revert)        
       end
     
+      def revert_to!(*args)
+        revert_to(*args) do
+          @aa_revisable_no_revision ? save! : revise!
+        end
+      end
+      
       def revert_to_without_revision!(*args)
         options = args.extract_options!
         options.update({:without_revision => true})

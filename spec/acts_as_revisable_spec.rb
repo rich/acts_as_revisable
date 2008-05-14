@@ -1,18 +1,5 @@
 require File.dirname(__FILE__) + '/spec_helper.rb'
 
-class Project < ActiveRecord::Base
-  acts_as_revisable do
-    revision_class_name "Session"
-    except :unimportant
-  end
-end
-
-class Session < ActiveRecord::Base
-  acts_as_revision do
-    revisable_class_name "Project"
-  end
-end
-
 describe FatJam::ActsAsRevisable do
   before(:all) do
     setup_db

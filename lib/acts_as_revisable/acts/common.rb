@@ -23,7 +23,7 @@ module FatJam
         end
       end
 
-      def branch(*args)
+      def branch(*args, &block)
         unless run_callbacks(:before_branch) { |r, o| r == false}
           raise ActiveRecord::RecordNotSaved
         end
@@ -32,15 +32,22 @@ module FatJam
         options[:revisable_branched_from_id] = self.id
         self.class.column_names.each do |col|
           next unless self.class.revisable_should_clone_column? col
-          options[col.to_sym] ||= self[col]
+          options[col.to_sym] = self[col] unless options.has_key?(col.to_sym)
         end
-
-        returning(self.class.revisable_class.create!(options)) do |br|
+        
+        returning(self.class.revisable_class.new(options)) do |br|
+          yield(br) if block_given?
           run_callbacks(:after_branch)
           br.run_callbacks(:after_branch_created)
         end
       end
-
+      
+      def branch!(*args)
+        branch(*args) do |br|
+          br.save!
+        end
+      end
+      
       def original_id
         self[:revisable_original_id] || self[:id]
       end
