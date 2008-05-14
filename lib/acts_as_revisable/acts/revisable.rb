@@ -231,7 +231,7 @@ module FatJam
       end
       
       module ClassMethods      
-        def with_scope_with_revisable(*args, &block)
+        def with_scope_with_revisable(*args, &block) #:nodoc:
           options = (args.grep(Hash).first || {})[:find]
 
           if options && options.delete(:with_revisions)
@@ -242,8 +242,8 @@ module FatJam
             with_scope_without_revisable(*args, &block)
           end
         end
-      
-        def find_with_revisable(*args)
+        
+        def find_with_revisable(*args) #:nodoc:
           options = args.grep(Hash).first
         
           if options && options.delete(:with_revisions)
@@ -261,14 +261,19 @@ module FatJam
           find_with_revisable(*args)
         end
       
+        # Returns the +revision_class_name+ as configured in
+        # +acts_as_revisable+.
         def revision_class_name
           self.revisable_options.revision_class_name || "#{self.class_name}Revision"
         end
       
+        # Returns the actual +Revision+ class based on the 
+        # #revision_class_name.
         def revision_class
           @aa_revision_class ||= revision_class_name.constantize
         end
         
+        # Returns the revisable_class which in this case is simply +self+.
         def revisable_class
           self
         end

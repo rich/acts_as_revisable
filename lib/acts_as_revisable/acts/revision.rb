@@ -45,14 +45,19 @@ module FatJam
       end
             
       module ClassMethods
+        # Returns the +revisable_class_name+ as configured in
+        # +acts_as_revisable+.
         def revisable_class_name
           self.revisable_options.revisable_class_name || self.class_name.gsub(/Revision/, '')
         end
       
+        # Returns the actual +Revisable+ class based on the 
+        # #revisable_class_name.
         def revisable_class
           @revisable_class ||= revisable_class_name.constantize
         end
         
+        # Returns the revision_class which in this case is simply +self+.
         def revision_class
           self
         end
