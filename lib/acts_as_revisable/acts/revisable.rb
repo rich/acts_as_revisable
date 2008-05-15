@@ -35,6 +35,8 @@ module FatJam
       end
       
       def revert_to(*args, &block)
+        @aar_is_reverting = true
+        
         unless run_callbacks(:before_revert) { |r, o| r == false}
           raise ActiveRecord::RecordNotSaved
         end
@@ -70,12 +72,18 @@ module FatJam
         rev.run_callbacks(:after_restore)
         run_callbacks(:after_revert)
         self
+      ensure
+        @aar_is_reverting = false
       end
     
       def revert_to!(*args)
         revert_to(*args) do
-          @aa_revisable_no_revision ? save! : revise!
+          @aa_revisable_no_revision == true ? save! : revise!
         end
+      end
+      
+      def is_reverting?
+        @aar_is_reverting == true
       end
       
       def revert_to_without_revision(*args)
