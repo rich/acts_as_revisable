@@ -15,10 +15,24 @@ end
 
 spec = Gem::Specification.new do |s|
   FatJam::ActsAsRevisable::GemSpecOptions::HASH.each do |key, value|
-    s.send(key,value)
+    s.send("#{key.to_s}=",value)
   end
 end
 
 Rake::GemPackageTask.new(spec) do |package|
   package.gem_spec = spec
+end
+
+desc "Generate the static gemspec required for github."
+task :generate_gemspec do
+  options = FatJam::ActsAsRevisable::GemSpecOptions::HASH.clone
+  options[:name] = "acts_as_revisable"
+  
+  spec = ["Gem::Specification.new do |s|"]
+  options.each do |key, value|
+    spec << "  s.#{key.to_s} = #{value.inspect}"
+  end
+  spec << "end"
+  
+  open("acts_as_revisable.gemspec", "w").write(spec.join("\n"))
 end

@@ -22,7 +22,7 @@ module FatJam
           end
         EVAL
       end
-            
+      
       def without_model_scope
         return unless block_given?
         
