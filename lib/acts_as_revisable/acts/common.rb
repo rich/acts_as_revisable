@@ -33,7 +33,7 @@ module FatJam
       #   being branched
       # * +after_branch_created+ is called on the newly created +Revisable+ instance.
       def branch(*args, &block)
-        @aar_is_branching = true
+        is_branching!
         
         unless run_callbacks(:before_branch) { |r, o| r == false}
           raise ActiveRecord::RecordNotSaved
@@ -46,13 +46,15 @@ module FatJam
           options[col.to_sym] = self[col] unless options.has_key?(col.to_sym)
         end
         
-        returning(self.class.revisable_class.new(options)) do |br|
+        returning(br = self.class.revisable_class.new(options)) do |br|
+          br.is_branching!
           yield(br) if block_given?
           run_callbacks(:after_branch)
           br.run_callbacks(:after_branch_created)
         end
       ensure
-        @aar_is_branching = false
+        br.is_branching!(false)
+        is_branching!(false)
       end
       
       # Same as #branch except it calls #save! on the new +Revisable+ instance.
@@ -60,6 +62,10 @@ module FatJam
         branch(*args) do |br|
           br.save!
         end
+      end
+      
+      def is_branching!(value=true)
+        @aar_is_branching = value
       end
       
       def is_branching?

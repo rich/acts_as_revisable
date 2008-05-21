@@ -152,7 +152,8 @@ module FatJam
       
       # Same as +changeset+ except it also saves
       def changeset!(&block)
-        returning(changeset(&block)) do
+        changeset do
+          block.call(self)
           save!
         end
       end
