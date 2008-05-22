@@ -3,7 +3,9 @@ module FatJam
     module Common
       def self.included(base) #:nodoc:
         base.send(:extend, ClassMethods)
-
+        base.class_inheritable_hash :aa_revisable_after_callback_blocks
+        base.aa_revisable_after_callback_blocks = {}
+        
         class << base
           alias_method_chain :instantiate, :revisable
         end
@@ -12,11 +14,25 @@ module FatJam
           define_callbacks :before_branch, :after_branch      
           has_many :branches, :class_name => base.class_name, :foreign_key => :revisable_branched_from_id
           belongs_to :branch_source, :class_name => base.class_name, :foreign_key => :revisable_branched_from_id
-
+          after_save :execute_blocks_after_save
         end
         base.alias_method_chain :branch_source, :open_scope  
       end
-
+      
+      def execute_blocks_after_save
+        return unless aa_revisable_after_callback_blocks[:save]
+        aa_revisable_after_callback_blocks[:save].each do |block|
+          block.call
+        end
+        aa_revisable_after_callback_blocks.delete(:save)
+      end
+      
+      def execute_after(key, &block)
+        return unless block_given?
+        aa_revisable_after_callback_blocks[key] ||= []
+        aa_revisable_after_callback_blocks[key] << block
+      end
+      
       def branch_source_with_open_scope(*args, &block) #:nodoc:
         self.class.without_model_scope do
           branch_source_without_open_scope(*args, &block)
@@ -46,15 +62,22 @@ module FatJam
           options[col.to_sym] = self[col] unless options.has_key?(col.to_sym)
         end
         
-        returning(br = self.class.revisable_class.new(options)) do |br|
-          br.is_branching!
-          yield(br) if block_given?
-          run_callbacks(:after_branch)
-          br.run_callbacks(:after_branch_created)
+        br = self.class.revisable_class.new(options)
+        br.is_branching!
+        
+        br.execute_after(:save) do
+          begin
+            run_callbacks(:after_branch)
+            br.run_callbacks(:after_branch_created)
+          ensure
+            br.is_branching!(false)
+            is_branching!(false)
+          end
         end
-      ensure
-        br.is_branching!(false)
-        is_branching!(false)
+        
+        block.call(br) if block_given?
+        
+        br
       end
       
       # Same as #branch except it calls #save! on the new +Revisable+ instance.
