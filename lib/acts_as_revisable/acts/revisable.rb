@@ -3,10 +3,7 @@ module FatJam
     module Revisable
       def self.included(base)
         base.send(:extend, ClassMethods)
-        
-        base.class_inheritable_hash :aa_revisable_current_revisions
-        base.aa_revisable_current_revisions = {}
-        
+                
         class << base
           alias_method_chain :find, :revisable
           alias_method_chain :with_scope, :revisable
@@ -35,7 +32,7 @@ module FatJam
       end
       
       def revert_to(*args, &block)
-        @aar_is_reverting = true
+        is_reverting!
         
         unless run_callbacks(:before_revert) { |r, o| r == false}
           raise ActiveRecord::RecordNotSaved
@@ -73,7 +70,7 @@ module FatJam
         run_callbacks(:after_revert)
         self
       ensure
-        @aar_is_reverting = false
+        is_reverting!(false)
       end
     
       def revert_to!(*args)
@@ -82,8 +79,12 @@ module FatJam
         end
       end
       
+      def is_reverting!(val=true)
+        set_revisable_state(:reverting, val)
+      end
+      
       def is_reverting?
-        @aar_is_reverting == true
+        get_revisable_state(:reverting)
       end
       
       def revert_to_without_revision(*args)
@@ -208,19 +209,16 @@ module FatJam
       end
     
       def in_revision?
-        key = self.read_attribute(self.class.primary_key)
-        aa_revisable_current_revisions[key] || false
+        get_revisable_state(:revision)
       end
 
       # Manages the internal state of a +Revisable+ controlling 
       # whether or not a record is being revised. This works across
       # instances and is keyed on primary_key.
       def in_revision!(val=true) #:nodoc:
-        key = self.read_attribute(self.class.primary_key)
-        aa_revisable_current_revisions[key] = val
-        aa_revisable_current_revisions.delete(key) unless val
+        set_revisable_state(:revision, val)
       end
-      
+            
       # This returns a new +Revision+ instance with all the appropriate
       # values initialized.
       def to_revision #:nodoc:

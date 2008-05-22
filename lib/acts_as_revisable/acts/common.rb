@@ -3,8 +3,12 @@ module FatJam
     module Common
       def self.included(base) #:nodoc:
         base.send(:extend, ClassMethods)
+        
         base.class_inheritable_hash :aa_revisable_after_callback_blocks
         base.aa_revisable_after_callback_blocks = {}
+        
+        base.class_inheritable_hash :aa_revisable_current_states
+        base.aa_revisable_current_states = {}
         
         class << base
           alias_method_chain :instantiate, :revisable
@@ -88,17 +92,31 @@ module FatJam
       end
       
       def is_branching!(value=true)
-        @aar_is_branching = value
+        set_revisable_state(:branching, value)
       end
       
       def is_branching?
-        @aar_is_branching == true
+        get_revisable_state(:branching)
       end
       
       # When called on a +Revision+ it returns the original id. When
       # called on a +Revisable+ it returns the id.
       def original_id
         self[:revisable_original_id] || self[:id]
+      end
+      
+      def set_revisable_state(type, value)
+        key = self.read_attribute(self.class.primary_key)
+        key = object_id if key.nil?
+        aa_revisable_current_states[type] ||= {}
+        aa_revisable_current_states[type][key] = value
+        aa_revisable_current_states[type].delete(key) unless value
+      end
+      
+      def get_revisable_state(type)
+        key = self.read_attribute(self.class.primary_key)
+        aa_revisable_current_states[type] ||= {}
+        aa_revisable_current_states[type][key] || aa_revisable_current_states[type][object_id] || false
       end
       
       module ClassMethods      
