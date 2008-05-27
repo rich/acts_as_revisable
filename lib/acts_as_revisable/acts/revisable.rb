@@ -8,7 +8,7 @@ module FatJam
           alias_method_chain :find, :revisable
           alias_method_chain :with_scope, :revisable
         end
-      
+        
         base.instance_eval do
           define_callbacks :before_revise, :after_revise, :before_revert, :after_revert, :before_changeset, :after_changeset, :after_branch_created
         
@@ -16,9 +16,9 @@ module FatJam
           alias_method_chain :save!, :revisable
         
           acts_as_scoped_model :find => {:conditions => {:revisable_is_current => true}}
-        
-          has_many :revisions, :class_name => revision_class_name, :foreign_key => :revisable_original_id, :order => "revisable_number DESC", :dependent => :destroy
-          has_many revision_class_name.pluralize.downcase.to_sym, :class_name => revision_class_name, :foreign_key => :revisable_original_id, :order => "revisable_number DESC", :dependent => :destroy
+          
+          has_many :revisions, (revisable_options.revision_association_options || {}).merge({:class_name => revision_class_name, :foreign_key => :revisable_original_id, :order => "revisable_number DESC", :dependent => :destroy})
+          has_many revision_class_name.pluralize.downcase.to_sym, (revisable_options.revision_association_options || {}).merge({:class_name => revision_class_name, :foreign_key => :revisable_original_id, :order => "revisable_number DESC", :dependent => :destroy})
           
           before_create :before_revisable_create
           before_update :before_revisable_update
@@ -47,10 +47,10 @@ module FatJam
           revisions.last
         when :previous
           revisions.first
-        when Fixnum
-          revisions.find_by_revisable_number(args.first)
         when Time
           revisions.find(:first, :conditions => ["? >= ? and ? <= ?", :revisable_revised_at, args.first, :revisable_current_at, args.first])
+        else
+          revisions.find_by_revisable_number(args.first)
         end
     
         unless rev.run_callbacks(:before_restore) { |r, o| r == false}
