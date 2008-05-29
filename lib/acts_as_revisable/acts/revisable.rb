@@ -169,13 +169,13 @@ module FatJam
       def save_with_revisable!(*args)
         @aa_revisable_new_params ||= args.extract_options!
         @aa_revisable_no_revision = true if @aa_revisable_new_params.delete :without_revision
-        save_without_revisable!(*args)
+        save_without_revisable!
       end
     
       def save_with_revisable(*args)
         @aa_revisable_new_params ||= args.extract_options!
         @aa_revisable_no_revision = true if @aa_revisable_new_params.delete :without_revision
-        save_without_revisable(*args)
+        save_without_revisable(args)
       end
       
       # Set some defaults for a newly created +Revisable+ instance.
