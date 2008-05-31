@@ -4,15 +4,7 @@ class Project
   validates_presence_of :name
 end
 
-describe FatJam::ActsAsRevisable, "with branching" do
-  before(:all) do
-    setup_db
-  end
-  
-  after(:all) do
-    teardown_db
-  end
-  
+describe FatJam::ActsAsRevisable, "with branching" do    
   after(:each) do
     cleanup_db
   end

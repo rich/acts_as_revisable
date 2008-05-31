@@ -1,12 +1,8 @@
 require File.dirname(__FILE__) + '/spec_helper.rb'
 
-describe "the quoted_columns extension" do
-  before(:all) do
-    setup_db
-  end
-    
-  after(:all) do
-    teardown_db
+describe "the quoted_columns extension" do      
+  after(:each) do
+    cleanup_db
   end
   
   it "should quote symbols matching column names as columns" do
