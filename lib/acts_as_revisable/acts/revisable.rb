@@ -41,6 +41,8 @@ module FatJam
           revisions.first
         when Time
           revisions.find(:first, :conditions => ["? >= ? and ? <= ?", :revisable_revised_at, by, :revisable_current_at, by])
+        when 0
+          self
         else
           revisions.find_by_revisable_number(by)
         end
