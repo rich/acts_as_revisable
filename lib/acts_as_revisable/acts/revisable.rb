@@ -113,11 +113,7 @@ module FatJam
           @aa_revisable_force_revision = false
         end
       end
-      
-      def revised?
-        @aa_revisable_was_revised || false
-      end
-      
+            
       # Groups statements that could trigger several revisions into
       # a single revision. The revision is created once #save is called.
       # 
@@ -202,7 +198,6 @@ module FatJam
       def after_revisable_update #:nodoc:
         if @revisable_revision
           @revisable_revision.save
-          @aa_revisable_was_revised = true
           revisions.reload
           run_callbacks(:after_revise)
         end
