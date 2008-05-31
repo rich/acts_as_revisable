@@ -19,7 +19,7 @@ module FatJam
           acts_as_scoped_model :find => {:conditions => {:revisable_is_current => true}}
           
           [:revisions, revisions_association_name.to_sym].each do |assoc|
-            has_many assoc, (revisable_options.revision_association_options || {}).merge({:class_name => revision_class_name, :foreign_key => :revisable_original_id, :order => "revisable_number DESC", :dependent => :destroy})
+            has_many assoc, (revisable_options.revision_association_options || {}).merge({:class_name => revision_class_name, :foreign_key => :revisable_original_id, :order => "#{quoted_table_name}.#{connection.quote_column_name(:revisable_number)} DESC", :dependent => :destroy})
           end
           
           before_create :before_revisable_create

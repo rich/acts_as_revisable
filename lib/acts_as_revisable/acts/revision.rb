@@ -16,7 +16,7 @@ module FatJam
         
           belongs_to :current_revision, :class_name => revisable_class_name, :foreign_key => :revisable_original_id
           belongs_to revisable_class_name.downcase.to_sym, :class_name  => revisable_class_name, :foreign_key => :revisable_original_id
-                    
+          
           before_create :revision_setup
         end
       end
