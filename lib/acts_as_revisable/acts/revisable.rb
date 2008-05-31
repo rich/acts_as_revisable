@@ -66,8 +66,8 @@ module FatJam
           self[col] = rev[col]
         end
     
-        aa_revisable_no_revision = true if options.delete :without_revision
-        aa_revisable_new_params = options
+        self.aa_revisable_no_revision = true if options.delete :without_revision
+        self.aa_revisable_new_params = options
         
         yield(self) if block_given?
         rev.run_callbacks(:after_restore)
@@ -79,7 +79,7 @@ module FatJam
     
       def revert_to!(*args)
         revert_to(*args) do
-          aa_revisable_no_revision == true ? save! : revise!
+          self.aa_revisable_no_revision == true ? save! : revise!
         end
       end
       
@@ -92,19 +92,19 @@ module FatJam
       end
       
       def force_revision!(val=true)
-        aa_revisable_force_revision = val
+        self.aa_revisable_force_revision = val
       end
       
       def force_revision?
-        aa_revisable_force_revision || false
+        self.aa_revisable_force_revision || false
       end
       
       def no_revision!(val=true)
-        aa_revisable_no_revision = val
+        self.aa_revisable_no_revision = val
       end
       
       def no_revision?
-        aa_revisable_no_revision || false
+        self.aa_revisable_no_revision || false
       end
       
       def revert_to_without_revision(*args)
