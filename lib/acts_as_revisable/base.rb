@@ -42,7 +42,7 @@ module FatJam
             attr_accessor :revisable_options
           end
           options = args.extract_options!
-          @revisable_options = Options.new(options, &block)
+          self.revisable_options = Options.new(options, &block)
         end
     end
   end

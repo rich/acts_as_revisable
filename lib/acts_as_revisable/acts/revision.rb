@@ -5,7 +5,11 @@ module FatJam
     module Revision
       def self.included(base)
         base.send(:extend, ClassMethods)
-      
+        
+        class << base
+          attr_accessor :revisable_revisable_class, :revisable_cloned_associations
+        end
+        
         base.instance_eval do
           set_table_name(revisable_class.table_name)
           acts_as_scoped_model :find => {:conditions => {:revisable_is_current => false}}
@@ -62,7 +66,7 @@ module FatJam
         # Returns the actual +Revisable+ class based on the 
         # #revisable_class_name.
         def revisable_class
-          @revisable_class ||= revisable_class_name.constantize
+          self.revisable_revisable_class ||= revisable_class_name.constantize
         end
         
         # Returns the revision_class which in this case is simply +self+.
@@ -77,7 +81,7 @@ module FatJam
         def revision_cloned_associations
           clone_associations = self.revisable_options.clone_associations
         
-          @aa_revisable_cloned_associations ||= if clone_associations.blank?
+          self.revisable_cloned_associations ||= if clone_associations.blank?
             []
           elsif clone_associations.eql? :all
             revisable_class.reflect_on_all_associations.map(&:name)

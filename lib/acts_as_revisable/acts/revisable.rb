@@ -7,26 +7,26 @@ module FatJam
         class << base
           alias_method_chain :find, :revisable
           alias_method_chain :with_scope, :revisable
-          attr_accessor :aa_revisable_revision_class, :aa_revisable_columns
+          attr_accessor :revisable_revision_class, :revisable_columns
         end
         
         base.instance_eval do
+          attr_accessor :revisable_no_revision, :revisable_new_params, :revisable_force_revision, :revisable_revision
+          
           define_callbacks :before_revise, :after_revise, :before_revert, :after_revert, :before_changeset, :after_changeset, :after_branch_created
-        
+          
           alias_method_chain :save, :revisable
           alias_method_chain :save!, :revisable
+          
+          before_create :before_revisable_create
+          before_update :before_revisable_update
+          after_update :after_revisable_update
           
           acts_as_scoped_model :find => {:conditions => {:revisable_is_current => true}}
           
           [:revisions, revisions_association_name.to_sym].each do |assoc|
             has_many assoc, (revisable_options.revision_association_options || {}).merge({:class_name => revision_class_name, :foreign_key => :revisable_original_id, :order => "#{quoted_table_name}.#{connection.quote_column_name(:revisable_number)} DESC", :dependent => :destroy})
           end
-          
-          before_create :before_revisable_create
-          before_update :before_revisable_update
-          after_update :after_revisable_update
-          
-          attr_accessor :aa_revisable_no_revision, :aa_revisable_new_params, :aa_revisable_force_revision, :aa_revisable_revision
         end
       end
       
@@ -66,8 +66,8 @@ module FatJam
           self[col] = rev[col]
         end
     
-        self.aa_revisable_no_revision = true if options.delete :without_revision
-        self.aa_revisable_new_params = options
+        self.revisable_no_revision = true if options.delete :without_revision
+        self.revisable_new_params = options
         
         yield(self) if block_given?
         rev.run_callbacks(:after_restore)
@@ -79,7 +79,7 @@ module FatJam
     
       def revert_to!(*args)
         revert_to(*args) do
-          self.aa_revisable_no_revision == true ? save! : revise!
+          self.revisable_no_revision == true ? save! : revise!
         end
       end
       
@@ -92,19 +92,19 @@ module FatJam
       end
       
       def force_revision!(val=true)
-        self.aa_revisable_force_revision = val
+        self.revisable_force_revision = val
       end
       
       def force_revision?
-        self.aa_revisable_force_revision || false
+        self.revisable_force_revision || false
       end
       
       def no_revision!(val=true)
-        self.aa_revisable_no_revision = val
+        self.revisable_no_revision = val
       end
       
       def no_revision?
-        self.aa_revisable_no_revision || false
+        self.revisable_no_revision || false
       end
       
       def revert_to_without_revision(*args)
@@ -183,14 +183,14 @@ module FatJam
       end
       
       def save_with_revisable!(*args)
-        self.aa_revisable_new_params ||= args.extract_options!
-        self.aa_revisable_no_revision! if self.aa_revisable_new_params.delete :without_revision
+        self.revisable_new_params ||= args.extract_options!
+        self.revisable_no_revision! if self.revisable_new_params.delete :without_revision
         save_without_revisable!
       end
     
       def save_with_revisable(*args)
-        self.aa_revisable_new_params ||= args.extract_options!
-        self.aa_revisable_no_revision! if self.aa_revisable_new_params.delete :without_revision
+        self.revisable_new_params ||= args.extract_options!
+        self.revisable_no_revision! if self.revisable_new_params.delete :without_revision
         save_without_revisable(args)
       end
       
@@ -204,19 +204,19 @@ module FatJam
         return true if force_revision?
         return false if no_revision?
         return false unless self.changed?
-        !(self.changed.map(&:downcase) & self.class.revisable_columns).blank?
+        !(self.changed.map(&:downcase) & self.class.revisable_watch_columns).blank?
       end
     
       def before_revisable_update #:nodoc:
         return unless should_revise?
         return false unless run_callbacks(:before_revise) { |r, o| r == false}
         
-        self.aa_revisable_revision = self.to_revision
+        self.revisable_revision = self.to_revision
       end
   
       def after_revisable_update #:nodoc:
-        if self.aa_revisable_revision
-          self.aa_revisable_revision.save
+        if self.revisable_revision
+          self.revisable_revision.save
           revisions.reload
           run_callbacks(:after_revise)
         end
@@ -237,7 +237,7 @@ module FatJam
       # This returns a new +Revision+ instance with all the appropriate
       # values initialized.
       def to_revision #:nodoc:
-        rev = self.class.revision_class.new(self.aa_revisable_new_params)
+        rev = self.class.revision_class.new(self.revisable_new_params)
 
         rev.revisable_original_id = self.id
 
@@ -247,7 +247,7 @@ module FatJam
           rev.send("#{col}=", val)
         end
 
-        self.aa_revisable_new_params = nil
+        self.revisable_new_params = nil
 
         rev
       end
@@ -292,7 +292,7 @@ module FatJam
         # Returns the actual +Revision+ class based on the 
         # #revision_class_name.
         def revision_class
-          self.aa_revisable_revision_class ||= revision_class_name.constantize
+          self.revisable_revision_class ||= revision_class_name.constantize
         end
         
         # Returns the revisable_class which in this case is simply +self+.
@@ -304,17 +304,17 @@ module FatJam
           revision_class_name.pluralize.downcase
         end
         
-        def revisable_columns
-          return self.aa_revisable_columns unless self.aa_revisable_columns.blank?
-          return self.aa_revisable_columns ||= [] if self.revisable_options.except == :all
-          return self.aa_revisable_columns ||= [self.revisable_options.only].flatten.map(&:to_s).map(&:downcase) unless self.revisable_options.only.blank?
+        def revisable_watch_columns
+          return self.revisable_columns unless self.revisable_columns.blank?
+          return self.revisable_columns ||= [] if self.revisable_options.except == :all
+          return self.revisable_columns ||= [self.revisable_options.only].flatten.map(&:to_s).map(&:downcase) unless self.revisable_options.only.blank?
                     
           except = [self.revisable_options.except].flatten || []
           except += REVISABLE_SYSTEM_COLUMNS
           except += REVISABLE_UNREVISABLE_COLUMNS
           except.uniq!
 
-          self.aa_revisable_columns ||= (column_names - except.map(&:to_s)).flatten.map(&:downcase)
+          self.revisable_columns ||= (column_names - except.map(&:to_s)).flatten.map(&:downcase)
         end
       end
     end

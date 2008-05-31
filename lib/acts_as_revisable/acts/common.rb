@@ -4,11 +4,11 @@ module FatJam
       def self.included(base) #:nodoc:
         base.send(:extend, ClassMethods)
         
-        base.class_inheritable_hash :aa_revisable_after_callback_blocks
-        base.aa_revisable_after_callback_blocks = {}
+        base.class_inheritable_hash :revisable_after_callback_blocks
+        base.revisable_after_callback_blocks = {}
         
-        base.class_inheritable_hash :aa_revisable_current_states
-        base.aa_revisable_current_states = {}
+        base.class_inheritable_hash :revisable_current_states
+        base.revisable_current_states = {}
         
         class << base
           alias_method_chain :instantiate, :revisable
@@ -24,17 +24,17 @@ module FatJam
       end
       
       def execute_blocks_after_save
-        return unless aa_revisable_after_callback_blocks[:save]
-        aa_revisable_after_callback_blocks[:save].each do |block|
+        return unless revisable_after_callback_blocks[:save]
+        revisable_after_callback_blocks[:save].each do |block|
           block.call
         end
-        aa_revisable_after_callback_blocks.delete(:save)
+        revisable_after_callback_blocks.delete(:save)
       end
       
       def execute_after(key, &block)
         return unless block_given?
-        aa_revisable_after_callback_blocks[key] ||= []
-        aa_revisable_after_callback_blocks[key] << block
+        revisable_after_callback_blocks[key] ||= []
+        revisable_after_callback_blocks[key] << block
       end
       
       def branch_source_with_open_scope(*args, &block) #:nodoc:
@@ -108,15 +108,15 @@ module FatJam
       def set_revisable_state(type, value)
         key = self.read_attribute(self.class.primary_key)
         key = object_id if key.nil?
-        aa_revisable_current_states[type] ||= {}
-        aa_revisable_current_states[type][key] = value
-        aa_revisable_current_states[type].delete(key) unless value
+        revisable_current_states[type] ||= {}
+        revisable_current_states[type][key] = value
+        revisable_current_states[type].delete(key) unless value
       end
       
       def get_revisable_state(type)
         key = self.read_attribute(self.class.primary_key)
-        aa_revisable_current_states[type] ||= {}
-        aa_revisable_current_states[type][key] || aa_revisable_current_states[type][object_id] || false
+        revisable_current_states[type] ||= {}
+        revisable_current_states[type][key] || revisable_current_states[type][object_id] || false
       end
       
       module ClassMethods      
