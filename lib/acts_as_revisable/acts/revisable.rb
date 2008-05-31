@@ -28,8 +28,19 @@ module FatJam
       end
       
       # Find a +Revision+ by revision_number.
-      def find_revision(number)
-        revisions.find_by_revisable_number(number)
+      def find_revision(by)
+        case by
+        when self.class.revision_class
+          by
+        when :first
+          revisions.last
+        when :previous
+          revisions.first
+        when Time
+          revisions.find(:first, :conditions => ["? >= ? and ? <= ?", :revisable_revised_at, by, :revisable_current_at, by])
+        else
+          revisions.find_by_revisable_number(by)
+        end        
       end
       
       def revert_to(*args, &block)
@@ -41,18 +52,7 @@ module FatJam
       
         options = args.extract_options!
     
-        rev = case args.first
-        when self.class.revision_class
-          args.first
-        when :first
-          revisions.last
-        when :previous
-          revisions.first
-        when Time
-          revisions.find(:first, :conditions => ["? >= ? and ? <= ?", :revisable_revised_at, args.first, :revisable_current_at, args.first])
-        else
-          revisions.find_by_revisable_number(args.first)
-        end
+        rev = find_revision(args.first)
     
         unless rev.run_callbacks(:before_restore) { |r, o| r == false}
           raise ActiveRecord::RecordNotSaved
