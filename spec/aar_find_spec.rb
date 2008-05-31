@@ -31,7 +31,7 @@ describe FatJam::ActsAsRevisable do
       lambda { Project.find_with_revisions(:all) }.should_not raise_error
     end
     
-    it "should find current and revisions with the :with_revisions option" do
+    it "should find current and revisions with the :with_revisions option" do      
       Project.find(:all, :with_revisions => true).size.should == 2
     end
     
