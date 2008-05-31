@@ -14,12 +14,13 @@ module FatJam
         
           alias_method_chain :save, :revisable
           alias_method_chain :save!, :revisable
-        
+          
           acts_as_scoped_model :find => {:conditions => {:revisable_is_current => true}}
           
-          has_many :revisions, (revisable_options.revision_association_options || {}).merge({:class_name => revision_class_name, :foreign_key => :revisable_original_id, :order => "revisable_number DESC", :dependent => :destroy})
-          has_many revision_class_name.pluralize.downcase.to_sym, (revisable_options.revision_association_options || {}).merge({:class_name => revision_class_name, :foreign_key => :revisable_original_id, :order => "revisable_number DESC", :dependent => :destroy})
-          
+          [:revisions, revisions_association_name.to_sym].each do |assoc|
+            has_many assoc, (revisable_options.revision_association_options || {}).merge({:class_name => revision_class_name, :foreign_key => :revisable_original_id, :order => "revisable_number DESC", :dependent => :destroy})
+          end
+                    
           before_create :before_revisable_create
           before_update :before_revisable_update
           after_update :after_revisable_update
@@ -283,6 +284,10 @@ module FatJam
         # Returns the revisable_class which in this case is simply +self+.
         def revisable_class
           self
+        end
+        
+        def revisions_association_name
+          revision_class_name.pluralize.downcase
         end
         
         def revisable_columns
