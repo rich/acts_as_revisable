@@ -27,7 +27,7 @@ module FatJam
             # Jumping through hoops here to try and make sure the
             # :finder_sql is cross-database compatible. :finder_sql
             # in a plugin is evil but, I see no other option.
-            has_many a.first, :class_name => revision_class_name, :finder_sql => "select * from #{quoted_table_name} where #{quote_bound_value(:revisable_original_id)} = \#{revisable_original_id} and #{quote_bound_value(:revisable_number)} #{a.last} \#{revisable_number} and #{quote_bound_value(:revisable_is_current)} = #{quote_value(false)}"
+            has_many a.first, :class_name => revision_class_name, :finder_sql => "select * from #{quoted_table_name} where #{quote_bound_value(:revisable_original_id)} = \#{revisable_original_id} and #{quote_bound_value(:revisable_number)} #{a.last} \#{revisable_number} and #{quote_bound_value(:revisable_is_current)} = #{quote_value(false)} order by #{quote_bound_value(:revisable_number)} #{(a.last.eql?("<") ? "DESC" : "ASC")}"
           end
           
         end
