@@ -2,6 +2,7 @@ require 'acts_as_revisable/options'
 require 'acts_as_revisable/acts/common'
 require 'acts_as_revisable/acts/revision'
 require 'acts_as_revisable/acts/revisable'
+require 'acts_as_revisable/acts/deletable'
 
 module FatJam
   # define the columns used internall by AAR
@@ -22,13 +23,14 @@ module FatJam
       def acts_as_revisable(*args, &block)
         revisable_shared_setup(args, block)
         self.send(:include, Revisable)
+        self.send(:include, Deletable) if self.revisable_options.on_delete == :revise
       end
       
       # This +acts_as+ extension provides for making a model the 
       # revision model in an acts_as_revisable pair.
       def acts_as_revision(*args, &block)
         revisable_shared_setup(args, block)
-        self.send(:include, Revision)
+        self.send(:include, Revision)        
       end
       
       private

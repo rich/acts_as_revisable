@@ -23,7 +23,7 @@ module FatJam
           before_create :before_revisable_create
           before_update :before_revisable_update
           after_update :after_revisable_update
-        end
+        end        
       end
       
       # Find a +Revision+ by revision_number.

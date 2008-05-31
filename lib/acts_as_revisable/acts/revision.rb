@@ -16,11 +16,19 @@ module FatJam
         
           belongs_to :current_revision, :class_name => revisable_class_name, :foreign_key => :revisable_original_id
           belongs_to revisable_class_name.downcase.to_sym, :class_name  => revisable_class_name, :foreign_key => :revisable_original_id
-          
+                    
           before_create :revision_setup
         end
       end
-    
+      
+      def previous
+        self.class.find(:first, :conditions => {:revisable_original_id => revisable_original_id, :revisable_number => revisable_number - 1})
+      end
+      
+      def next
+        self.class.find(:first, :conditions => {:revisable_original_id => revisable_original_id, :revisable_number => revisable_number + 1})
+      end
+      
       def revision_name=(val)
         self[:revisable_name] = val
       end
@@ -60,6 +68,10 @@ module FatJam
         # Returns the revision_class which in this case is simply +self+.
         def revision_class
           self
+        end
+        
+        def revision_class_name
+          self.name
         end
         
         def revision_cloned_associations
