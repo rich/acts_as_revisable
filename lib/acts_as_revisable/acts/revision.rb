@@ -3,7 +3,7 @@ require 'acts_as_revisable/clone_associations'
 module FatJam
   module ActsAsRevisable
     module Revision
-      def self.included(base)
+      def self.included(base) #:nodoc:
         base.send(:extend, ClassMethods)
         
         class << base
@@ -29,7 +29,6 @@ module FatJam
             # in a plugin is evil but, I see no other option.
             has_many a.first, :class_name => revision_class_name, :finder_sql => "select * from #{quoted_table_name} where #{quote_bound_value(:revisable_original_id)} = \#{revisable_original_id} and #{quote_bound_value(:revisable_number)} #{a.last} \#{revisable_number} and #{quote_bound_value(:revisable_is_current)} = #{quote_value(false)} order by #{quote_bound_value(:revisable_number)} #{(a.last.eql?("<") ? "DESC" : "ASC")}"
           end
-          
         end
       end
       
@@ -43,19 +42,23 @@ module FatJam
         self.class.find(:first, :conditions => {:revisable_original_id => revisable_original_id, :revisable_number => revisable_number + 1})
       end
       
-      def revision_name=(val)
+      # Setter for revisable_name just to make external API more pleasant.
+      def revision_name=(val) #:nodoc:
         self[:revisable_name] = val
       end
     
-      def revision_name
+      # Accessor for revisable_name just to make external API more pleasant.
+      def revision_name #:nodoc:
         self[:revisable_name]
       end
     
-      def revision_number
+      # Accessor for revisable_number just to make external API more pleasant.
+      def revision_number #:nodoc:
         self[:revisable_number]
       end
       
-      def revision_setup
+      # Sets some initial values for a new revision.
+      def revision_setup #:nodoc:
         now = Time.now
         prev = current_revision.revisions.first
         prev.update_attribute(:revisable_revised_at, now) if prev
@@ -69,30 +72,33 @@ module FatJam
       module ClassMethods
         # Returns the +revisable_class_name+ as configured in
         # +acts_as_revisable+.
-        def revisable_class_name
+        def revisable_class_name #:nodoc:
           self.revisable_options.revisable_class_name || self.class_name.gsub(/Revision/, '')
         end
       
         # Returns the actual +Revisable+ class based on the 
         # #revisable_class_name.
-        def revisable_class
+        def revisable_class #:nodoc:
           self.revisable_revisable_class ||= revisable_class_name.constantize
         end
         
         # Returns the revision_class which in this case is simply +self+.
-        def revision_class
+        def revision_class #:nodoc:
           self
         end
         
-        def revision_class_name
+        def revision_class_name #:nodoc:
           self.name
         end
         
-        def revisable_association_name
+        # Returns the name of the association acts_as_revision
+        # creates.
+        def revisable_association_name #:nodoc:
           revisable_class_name.downcase
         end
         
-        def revision_cloned_associations
+        # Returns an array of the associations that should be cloned.
+        def revision_cloned_associations #:nodoc:
           clone_associations = self.revisable_options.clone_associations
         
           self.revisable_cloned_associations ||= if clone_associations.blank?

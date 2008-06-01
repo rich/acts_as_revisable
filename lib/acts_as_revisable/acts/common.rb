@@ -20,10 +20,14 @@ module FatJam
           belongs_to :branch_source, :class_name => base.class_name, :foreign_key => :revisable_branched_from_id
           after_save :execute_blocks_after_save
         end
+        
+        # This aliases branch_source to branch_source_with_open_scope
+        # for proper scope wrapping.
         base.alias_method_chain :branch_source, :open_scope  
       end
       
-      def execute_blocks_after_save
+      # Executes the blocks stored in an accessor after a save.
+      def execute_blocks_after_save #:nodoc:
         return unless revisable_after_callback_blocks[:save]
         revisable_after_callback_blocks[:save].each do |block|
           block.call
@@ -31,12 +35,16 @@ module FatJam
         revisable_after_callback_blocks.delete(:save)
       end
       
-      def execute_after(key, &block)
+      # Stores a block for later execution after a given callback.
+      # The parameter +key+ is the callback the block should be 
+      # executed after.
+      def execute_after(key, &block) #:nodoc:
         return unless block_given?
         revisable_after_callback_blocks[key] ||= []
         revisable_after_callback_blocks[key] << block
       end
       
+      # Wrap up branch_source in the appropriate scope.
       def branch_source_with_open_scope(*args, &block) #:nodoc:
         self.class.without_model_scope do
           branch_source_without_open_scope(*args, &block)
@@ -91,10 +99,13 @@ module FatJam
         end
       end
       
-      def is_branching!(value=true)
+      # Globally sets the reverting state of this record.
+      def is_branching!(value=true) #:nodoc:
         set_revisable_state(:branching, value)
       end
       
+      # Returns true if the _record_ (not just this instance 
+      # of the record) is currently being branched.
       def is_branching?
         get_revisable_state(:branching)
       end
@@ -105,7 +116,10 @@ module FatJam
         self[:revisable_original_id] || self[:id]
       end
       
-      def set_revisable_state(type, value)
+      # Globally sets the state for a given record. This is keyed
+      # on the primary_key of a saved record or the object_id
+      # on a new instance.
+      def set_revisable_state(type, value) #:nodoc:
         key = self.read_attribute(self.class.primary_key)
         key = object_id if key.nil?
         revisable_current_states[type] ||= {}
@@ -113,19 +127,24 @@ module FatJam
         revisable_current_states[type].delete(key) unless value
       end
       
-      def get_revisable_state(type)
+      # Returns the state of the given record.
+      def get_revisable_state(type) #:nodoc:
         key = self.read_attribute(self.class.primary_key)
         revisable_current_states[type] ||= {}
         revisable_current_states[type][key] || revisable_current_states[type][object_id] || false
       end
       
-      module ClassMethods      
-        def revisable_should_clone_column?(col)
+      module ClassMethods  
+        # Returns true if the revision should clone the given column.    
+        def revisable_should_clone_column?(col) #:nodoc:
           return false if (REVISABLE_SYSTEM_COLUMNS + REVISABLE_UNREVISABLE_COLUMNS).member? col
           true
         end
-
-        def instantiate_with_revisable(record)
+        
+        # acts_as_revisable's override for instantiate so we can
+        # return the appropriate type of model based on whether
+        # or not the record is the current record.
+        def instantiate_with_revisable(record) #:nodoc:
           is_current = columns_hash["revisable_is_current"].type_cast(
                 record["revisable_is_current"])
 
