@@ -1,5 +1,18 @@
 module FatJam
   module ActsAsRevisable
+    
+    # This module is mixed into the revision classes.
+    # 
+    # ==== Callbacks
+    # 
+    # * +before_revise+ is called before the record is revised.
+    # * +after_revise+ is called after the record is revised.
+    # * +before_revert+ is called before the record is reverted.
+    # * +after_revert+ is called after the record is reverted.
+    # * +before_changeset+ is called before a changeset block is called.
+    # * +after_changeset+ is called after a changeset block is called.
+    # * +after_branch_created+ is called on the new revisable instance
+    #   created by branching after it's been created.
     module Revisable
       def self.included(base) #:nodoc:
         base.send(:extend, ClassMethods)
@@ -72,6 +85,17 @@ module FatJam
       # 
       # The +what+ parameter is simply passed to find_revision and the
       # returned record forms the basis of the reverted record.
+      # 
+      # ==== Callbacks
+      # 
+      # * +before_revert+ is called before the record is reverted.
+      # * +after_revert+ is called after the record is reverted.
+      # 
+      # If :without_revision => true has not been passed the 
+      # following callbacks are also called:
+      # 
+      # * +before_revise+ is called before the record is revised.
+      # * +after_revise+ is called after the record is revised.
       def revert_to(what, *args, &block) #:yields:
         is_reverting!
         
@@ -159,6 +183,11 @@ module FatJam
             
       # Force an immediate revision whether or
       # not any columns have been modified.
+      # 
+      # ==== Callbacks
+      # 
+      # * +before_revise+ is called before the record is revised.
+      # * +after_revise+ is called after the record is revised.
       def revise!
         return if in_revision?
         
@@ -175,6 +204,7 @@ module FatJam
       # Groups statements that could trigger several revisions into
       # a single revision. The revision is created once #save is called.
       # 
+      # ==== Example
       #   @project.revision_number # => 1
       #   @project.changeset do |project|
       #     # each one of the following statements would 
@@ -185,6 +215,11 @@ module FatJam
       #   end
       #   @project.save
       #   @project.revision_number # => 2
+      # 
+      # ==== Callbacks
+      # 
+      # * +before_changeset+ is called before a changeset block is called.
+      # * +after_changeset+ is called after a changeset block is called.      
       def changeset(&block)
         return unless block_given?
         

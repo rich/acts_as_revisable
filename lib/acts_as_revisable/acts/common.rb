@@ -1,5 +1,13 @@
 module FatJam
   module ActsAsRevisable
+    # This module is mixed into the revision and revisable classes.
+    # 
+    # ==== Callbacks
+    # 
+    # * +before_branch+ is called on the +Revisable+ or +Revision+ that is 
+    #   being branched
+    # * +after_branch+ is called on the +Revisable+ or +Revision+ that is 
+    #   being branched
     module Common
       def self.included(base) #:nodoc:
         base.send(:extend, ClassMethods)
@@ -54,12 +62,13 @@ module FatJam
       # Branch the +Revisable+ or +Revision+ and return the new 
       # +revisable+ instance. The instance has not been saved yet.
       # 
-      # This method triggers three callbacks:
+      # ==== Callbacks
       # * +before_branch+ is called on the +Revisable+ or +Revision+ that is 
       #   being branched
       # * +after_branch+ is called on the +Revisable+ or +Revision+ that is 
       #   being branched
-      # * +after_branch_created+ is called on the newly created +Revisable+ instance.
+      # * +after_branch_created+ is called on the newly created 
+      #   +Revisable+ instance.
       def branch(*args, &block)
         is_branching!
         

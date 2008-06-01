@@ -2,6 +2,14 @@ require 'acts_as_revisable/clone_associations'
 
 module FatJam
   module ActsAsRevisable
+    # This module is mixed into the revision classes.
+    # 
+    # ==== Callbacks
+    # 
+    # * +before_restore+ is called on the revision class before it is 
+    #   restored as the current record.
+    # * +after_restore+ is called on the revision class after it is 
+    #   restored as the current record.
     module Revision
       def self.included(base) #:nodoc:
         base.send(:extend, ClassMethods)
