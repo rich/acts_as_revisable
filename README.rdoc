@@ -85,40 +85,66 @@ Some example usage:
   
   @project.name = "Stephen"
   @project.save(:without_revision => true)
-  @project.name                   # => Stephen
+  @project.name                   # => "Stephen"
   @project.revision_number        # => 0
   
   @project.name = "Sam"
   @project.save(:revision_name => "Changed name")
   @project.revision_number        # => 1
-
+  
+  @project.updated_attribute(:name, "Third")
+  @project.revision_number        # => 2
+  
 Navigating revisions:
 
   @previous = @project.find_revision(:previous)
   # or
   @previous = @project.revisions.first
   
-  @previous.name                  # => Rich
-  @previous.current_revision.name # => Sam
-  @previous.project.name          # => Sam
-  @previous.revision_name         # => Changed name
-
+  @previous.name                  # => "Sam"
+  @previous.current_revision.name # => "Third"
+  @previous.project.name          # => "Third"
+  @previous.revision_name         # => "Changed name"
+  
+  @previous.previous.name         # => "Rich"
+  @previous.ancestors.map(&:name) # => ["Rich"]
+  
 Reverting:
 
   @project.revert_to!(:previous)
   @project.revision_number        # => 2
-  @project.name                   # => Rich
+  @project.name                   # => "Rich"
   
   @project.revert_to!(1, :without_revision => true)
   @project.revision_number        # => 2
-  @project.name                   # => Sam
+  @project.name                   # => "Sam"
 
-Branching
+Branching:
   
   @branch = @project.branch(:name => "Bruno")
   @branch.revision_number         # => 0
-  @branch.branch_source.name      # => Sam
+  @branch.branch_source.name      # => "Sam"
 
+Changesets:
+  
+  @project.revision_number        # => 2
+  
+  @project.changeset! do 
+    @project.name = "Josh"
+    
+    # save would normally trigger a revision
+    @project.save
+    
+    # update_attribute triggers a save triggering a revision (normally)
+    @project.updated_attribute(:name, "Chris")
+    
+    # revise! normally forces a revision to be created
+    @project.revise!
+  end
+  
+  # our revision number has only incremented by one
+  @project.revision_number        # => 3
+  
 Associations have been cloned:
 
   @project.owner === @previous.owner   # => true
@@ -146,22 +172,16 @@ If the owner isn't set let's prevent reverting:
       false unless self.owner?
     end
   end
-  
+
 == REQUIREMENTS:
 
 This plugin currently depends on Edge Rails, ActiveRecord and ActiveSupport specifically, which will eventually become Rails 2.1.
 
 == INSTALL:
 
-acts_as_revisable uses Rails' new ability to use gems as plugins. Installing AAR is as simple as installing a gem.
+acts_as_revisable uses Rails' new ability to use gems as plugins. Installing AAR is as simple as installing a gem:
 
-You may need to add GitHub as a Gem source:
-
-  sudo gem sources -a http://gems.github.com/
-
-Then it can be installed as usual:
-
-  sudo gem install fatjam-acts_as_revisable
+  sudo gem install fatjam-acts_as_revisable --source=http://gems.github.com
 
 Once the gem is installed you'll want to activate it in your Rails app by adding the following line to config/environment.rb:
 

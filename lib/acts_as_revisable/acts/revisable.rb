@@ -1,7 +1,7 @@
 module FatJam
   module ActsAsRevisable
     module Revisable
-      def self.included(base)
+      def self.included(base) #:nodoc:
         base.send(:extend, ClassMethods)
                 
         class << base
@@ -30,7 +30,26 @@ module FatJam
         end
       end
       
-      # Find a +Revision+ by revision_number.
+      # Finds a specific revision of self.
+      # 
+      # The +by+ parameter can be a revision_class instance, 
+      # the symbols :first, :previous or :last, a Time instance
+      # or an Integer.
+      # 
+      # When passed a revision_class instance, this method
+      # simply returns it. This is used primarily by revert_to!.
+      # 
+      # When passed :first it returns the first revision created.
+      # 
+      # When passed :previous or :last it returns the last revision
+      # created.
+      # 
+      # When passed a Time instance it returns the revision that
+      # was the current record at the given time.
+      # 
+      # When passed an Integer it returns the revision with that
+      # revision_number. The exception is 0 (zero) which returns
+      # the current record.
       def find_revision(by)
         case by
         when self.class.revision_class
@@ -48,7 +67,12 @@ module FatJam
         end
       end
       
-      def revert_to(*args, &block)
+      # Returns a revisable_class instance initialized with the record
+      # found using find_revision.
+      # 
+      # The +what+ parameter is simply passed to find_revision and the
+      # returned record forms the basis of the reverted record.
+      def revert_to(what, *args, &block) #:yields:
         is_reverting!
         
         unless run_callbacks(:before_revert) { |r, o| r == false}
@@ -57,7 +81,7 @@ module FatJam
       
         options = args.extract_options!
     
-        rev = find_revision(args.first)
+        rev = find_revision(what)
     
         unless rev.run_callbacks(:before_restore) { |r, o| r == false}
           raise ActiveRecord::RecordNotSaved
@@ -79,49 +103,62 @@ module FatJam
         is_reverting!(false)
       end
     
-      def revert_to!(*args)
-        revert_to(*args) do
+      # Same as revert_to except it also saves the record.
+      def revert_to!(what, *args)
+        revert_to(what, *args) do
           self.revisable_no_revision == true ? save! : revise!
         end
       end
       
-      def is_reverting!(val=true)
-        set_revisable_state(:reverting, val)
-      end
-      
-      def is_reverting?
-        get_revisable_state(:reverting) || false
-      end
-      
-      def force_revision!(val=true)
-        self.revisable_force_revision = val
-      end
-      
-      def force_revision?
-        self.revisable_force_revision || false
-      end
-      
-      def no_revision!(val=true)
-        self.revisable_no_revision = val
-      end
-      
-      def no_revision?
-        self.revisable_no_revision || false
-      end
-      
+      # Equivalent to:
+      #   revert_to(:without_revision => true)
       def revert_to_without_revision(*args)
         options = args.extract_options!
         options.update({:without_revision => true})
         revert_to(*(args << options))
       end
       
+      # Equivalent to:
+      #   revert_to!(:without_revision => true)
       def revert_to_without_revision!(*args)
         options = args.extract_options!
         options.update({:without_revision => true})
         revert_to!(*(args << options))
       end
       
-      # Force a revision whether or not any columns have been modified.
+      # Globally sets the reverting state of this record.
+      def is_reverting!(val=true) #:nodoc:
+        set_revisable_state(:reverting, val)
+      end
+      
+      # Returns true if the _record_ (not just this instance 
+      # of the record) is currently being reverted.
+      def is_reverting?
+        get_revisable_state(:reverting) || false
+      end
+      
+      # Sets whether or not to force a revision.
+      def force_revision!(val=true) #:nodoc:
+        self.revisable_force_revision = val
+      end
+      
+      # Returns true if a revision should be forced.
+      def force_revision? #:nodoc:
+        self.revisable_force_revision || false
+      end
+      
+      # Sets whether or not no revision should be created.
+      def no_revision!(val=true) #:nodoc:
+        self.revisable_no_revision = val
+      end
+      
+      # Returns true if no revision should be created.
+      def no_revision? #:nodoc:
+        self.revisable_no_revision || false
+      end
+            
+      # Force an immediate revision whether or
+      # not any columns have been modified.
       def revise!
         return if in_revision?
         
@@ -169,7 +206,7 @@ module FatJam
         end
       end
       
-      # Same as +changeset+ except it also saves
+      # Same as +changeset+ except it also saves the record.
       def changeset!(&block)
         changeset do
           block.call(self)
@@ -184,13 +221,15 @@ module FatJam
         0
       end
       
-      def save_with_revisable!(*args)
+      # acts_as_revisable's override for ActiveRecord::Base's #save!
+      def save_with_revisable!(*args) #:nodoc:
         self.revisable_new_params ||= args.extract_options!
         self.revisable_no_revision! if self.revisable_new_params.delete :without_revision
         save_without_revisable!
       end
-    
-      def save_with_revisable(*args)
+      
+      # acts_as_revisable's override for ActiveRecord::Base's #save  
+      def save_with_revisable(*args) #:nodoc:
         self.revisable_new_params ||= args.extract_options!
         self.revisable_no_revision! if self.revisable_new_params.delete :without_revision
         save_without_revisable(args)
@@ -208,14 +247,19 @@ module FatJam
         return false unless self.changed?
         !(self.changed.map(&:downcase) & self.class.revisable_watch_columns).blank?
       end
-    
+      
+      # Checks whether or not a revision should be stored.
+      # If it should be, it initialized the revision_class
+      # and stores it in an accessor for later saving.
       def before_revisable_update #:nodoc:
         return unless should_revise?
         return false unless run_callbacks(:before_revise) { |r, o| r == false}
         
         self.revisable_revision = self.to_revision
       end
-  
+      
+      # Checks if an initialized revision_class has been stored
+      # in the accessor. If it has been, this instance is saved.
       def after_revisable_update #:nodoc:
         if self.revisable_revision
           self.revisable_revision.save
@@ -224,7 +268,9 @@ module FatJam
         end
         force_revision!(false)
       end
-    
+      
+      # Returns true if the _record_ (not just this instance 
+      # of the record) is currently being revised.
       def in_revision?
         get_revisable_state(:revision)
       end
@@ -254,7 +300,15 @@ module FatJam
         rev
       end
       
-      module ClassMethods      
+      module ClassMethods
+        # acts_as_revisable's override for with_scope that allows for
+        # including revisions in the scope.
+        # 
+        # ==== Example
+        # 
+        #   with_scope(:with_revision => true) do
+        #     ...
+        #   end
         def with_scope_with_revisable(*args, &block) #:nodoc:
           options = (args.grep(Hash).first || {})[:find]
 
@@ -267,6 +321,12 @@ module FatJam
           end
         end
         
+        # acts_as_revisable's override for find that allows for
+        # including revisions in the find.
+        # 
+        # ==== Example
+        # 
+        #   find(:all, :with_revision => true)
         def find_with_revisable(*args) #:nodoc:
           options = args.grep(Hash).first
         
@@ -278,7 +338,9 @@ module FatJam
             find_without_revisable(*args)
           end
         end
-      
+        
+        # Equivalent to:
+        #   find(..., :with_revision => true)
         def find_with_revisions(*args)
           args << {} if args.grep(Hash).blank?
           args.grep(Hash).first.update({:with_revisions => true})
@@ -287,26 +349,29 @@ module FatJam
       
         # Returns the +revision_class_name+ as configured in
         # +acts_as_revisable+.
-        def revision_class_name
+        def revision_class_name #:nodoc:
           self.revisable_options.revision_class_name || "#{self.class_name}Revision"
         end
       
         # Returns the actual +Revision+ class based on the 
         # #revision_class_name.
-        def revision_class
+        def revision_class #:nodoc:
           self.revisable_revision_class ||= revision_class_name.constantize
         end
         
         # Returns the revisable_class which in this case is simply +self+.
-        def revisable_class
+        def revisable_class #:nodoc:
           self
         end
         
-        def revisions_association_name
+        # Returns the name of the association acts_as_revisable
+        # creates.
+        def revisions_association_name #:nodoc:
           revision_class_name.pluralize.downcase
         end
         
-        def revisable_watch_columns
+        # Returns an Array of the columns that are watched for changes.
+        def revisable_watch_columns #:nodoc:
           return self.revisable_columns unless self.revisable_columns.blank?
           return self.revisable_columns ||= [] if self.revisable_options.except == :all
           return self.revisable_columns ||= [self.revisable_options.only].flatten.map(&:to_s).map(&:downcase) unless self.revisable_options.only.blank?

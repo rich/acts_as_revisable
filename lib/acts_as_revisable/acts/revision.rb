@@ -33,10 +33,12 @@ module FatJam
         end
       end
       
+      # Return the revision prior to this one.
       def previous
         self.class.find(:first, :conditions => {:revisable_original_id => revisable_original_id, :revisable_number => revisable_number - 1})
       end
       
+      # Return the revision after this one.
       def next
         self.class.find(:first, :conditions => {:revisable_original_id => revisable_original_id, :revisable_number => revisable_number + 1})
       end
