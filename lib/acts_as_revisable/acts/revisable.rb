@@ -116,7 +116,7 @@ module FatJam
           self[col] = rev[col]
         end
     
-        self.revisable_no_revision = true if options.delete :without_revision
+        self.no_revision! if options.delete :without_revision
         self.revisable_new_params = options
         
         yield(self) if block_given?
@@ -130,7 +130,7 @@ module FatJam
       # Same as revert_to except it also saves the record.
       def revert_to!(what, *args)
         revert_to(what, *args) do
-          self.revisable_no_revision == true ? save! : revise!
+          self.no_revision! ? save! : revise!
         end
       end
       
@@ -260,14 +260,14 @@ module FatJam
       # acts_as_revisable's override for ActiveRecord::Base's #save!
       def save_with_revisable!(*args) #:nodoc:
         self.revisable_new_params ||= args.extract_options!
-        self.revisable_no_revision! if self.revisable_new_params.delete :without_revision
+        self.no_revision! if self.revisable_new_params.delete :without_revision
         save_without_revisable!
       end
       
       # acts_as_revisable's override for ActiveRecord::Base's #save  
       def save_with_revisable(*args) #:nodoc:
         self.revisable_new_params ||= args.extract_options!
-        self.revisable_no_revision! if self.revisable_new_params.delete :without_revision
+        self.no_revision! if self.revisable_new_params.delete :without_revision
         save_without_revisable(args)
       end
       
@@ -334,6 +334,11 @@ module FatJam
         self.revisable_new_params = nil
 
         rev
+      end
+      
+      # This returns
+      def current_revision
+        self
       end
       
       module ClassMethods

@@ -143,6 +143,21 @@ module FatJam
         revisable_current_states[type][key] || revisable_current_states[type][object_id] || false
       end
       
+      # Returns true if the instance is the first revision.
+      def first_revision?
+        self.revision_number == 1
+      end
+      
+      # Returns true if the instance is the most recent revision.
+      def latest_revision?
+        self.revision_number == self.current_revision.revision_number
+      end
+      
+      # Returns true if the instance is the current record and not a revision.
+      def current_revision?
+        self.is_a? self.class.revisable_class
+      end
+      
       module ClassMethods  
         # Returns true if the revision should clone the given column.    
         def revisable_should_clone_column?(col) #:nodoc:

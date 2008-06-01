@@ -7,8 +7,16 @@ describe FatJam::ActsAsRevisable do
     
   before(:each) do
     @project = Project.create(:name => "Rich", :notes => "this plugin's author")
-    @project.update_attribute(:name => "one")
-    @project.update_attribute(:name => "two")
-    @project.update_attribute(:name => "three")
+    @project.update_attribute(:name, "one")
+    @project.update_attribute(:name, "two")
+    @project.update_attribute(:name, "three")
   end
+  
+  it "should have a pretty named association" do
+    lambda { @project.project_revisions }.should
+  end
+  
+  it "should return all the revisions" do
+    @project.revisions.size.should == 3
+  end    
 end
