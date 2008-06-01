@@ -347,7 +347,7 @@ module FatJam
         # 
         # ==== Example
         # 
-        #   with_scope(:with_revision => true) do
+        #   with_scope(:with_revisions => true) do
         #     ...
         #   end
         def with_scope_with_revisable(*args, &block) #:nodoc:
@@ -367,7 +367,7 @@ module FatJam
         # 
         # ==== Example
         # 
-        #   find(:all, :with_revision => true)
+        #   find(:all, :with_revisions => true)
         def find_with_revisable(*args) #:nodoc:
           options = args.grep(Hash).first
         
@@ -381,7 +381,7 @@ module FatJam
         end
         
         # Equivalent to:
-        #   find(..., :with_revision => true)
+        #   find(..., :with_revisions => true)
         def find_with_revisions(*args)
           args << {} if args.grep(Hash).blank?
           args.grep(Hash).first.update({:with_revisions => true})
