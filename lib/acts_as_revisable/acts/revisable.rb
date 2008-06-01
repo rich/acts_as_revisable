@@ -205,6 +205,7 @@ module FatJam
       # a single revision. The revision is created once #save is called.
       # 
       # ==== Example
+      # 
       #   @project.revision_number # => 1
       #   @project.changeset do |project|
       #     # each one of the following statements would 

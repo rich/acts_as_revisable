@@ -34,6 +34,13 @@ module FatJam
         base.alias_method_chain :branch_source, :open_scope  
       end
       
+      # Wrap up branch_source in the appropriate scope.
+      def branch_source_with_open_scope(*args, &block) #:nodoc:
+        self.class.without_model_scope do
+          branch_source_without_open_scope(*args, &block)
+        end
+      end
+      
       # Executes the blocks stored in an accessor after a save.
       def execute_blocks_after_save #:nodoc:
         return unless revisable_after_callback_blocks[:save]
@@ -51,14 +58,7 @@ module FatJam
         revisable_after_callback_blocks[key] ||= []
         revisable_after_callback_blocks[key] << block
       end
-      
-      # Wrap up branch_source in the appropriate scope.
-      def branch_source_with_open_scope(*args, &block) #:nodoc:
-        self.class.without_model_scope do
-          branch_source_without_open_scope(*args, &block)
-        end
-      end
-      
+            
       # Branch the +Revisable+ or +Revision+ and return the new 
       # +revisable+ instance. The instance has not been saved yet.
       # 

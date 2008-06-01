@@ -30,5 +30,9 @@ describe FatJam::ActsAsRevisable do
     it "should find current and revisions with the find_with_revisions method" do
       Project.find_with_revisions(:all).size.should == 2
     end
+    
+    it "should find revisions with conditions" do
+      Project.find_with_revisions(:all, :conditions => {:name => "Rich"}).should == [@project1.find_revision(:previous)]
+    end
   end
 end
