@@ -37,7 +37,7 @@ This plugin wouldn't exist without Rick Olsen's acts_as_versioned. AAV has been 
 * Uses ActiveRecord's dirty attribute tracking.
 * Several ways to find revisions including:
   * revision number
-  * relative keywords (:previous, :last)
+  * relative keywords (:first, :previous and :last)
   * timestamp
 * Reverting
 * Branching
@@ -96,7 +96,7 @@ Some example usage:
   @project.revision_number        # => 2
   
 Navigating revisions:
-
+  
   @previous = @project.find_revision(:previous)
   # or
   @previous = @project.revisions.first
@@ -107,7 +107,16 @@ Navigating revisions:
   @previous.revision_name         # => "Changed name"
   
   @previous.previous.name         # => "Rich"
-  @previous.ancestors.map(&:name) # => ["Rich"]
+  
+  # Forcing the creation of a new revision.
+  @project.updated_attribute("Rogelio")
+  @project.revision_number        # => 3
+  
+  @newest = @project.find_revision(:previous)
+  @newest.ancestors.map(&:name)   # => ["Third", "Rich"]
+  
+  @oldest = @project.find_revision(:first)
+  @oldest.descendants.map(&:name) # => ["Sam", "Third"]
   
 Reverting:
 
