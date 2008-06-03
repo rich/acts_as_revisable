@@ -172,7 +172,7 @@ module FatJam
           is_current = columns_hash["revisable_is_current"].type_cast(
                 record["revisable_is_current"])
 
-          if (is_current && self == self.revisable_class) || (is_current && self == self.revision_class)
+          if (is_current && self == self.revisable_class) || (!is_current && self == self.revision_class)
             return instantiate_without_revisable(record)
           end
 
