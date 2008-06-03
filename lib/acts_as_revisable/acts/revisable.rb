@@ -130,7 +130,7 @@ module FatJam
       # Same as revert_to except it also saves the record.
       def revert_to!(what, *args)
         revert_to(what, *args) do
-          self.no_revision! ? save! : revise!
+          self.no_revision? ? save! : revise!
         end
       end
       
