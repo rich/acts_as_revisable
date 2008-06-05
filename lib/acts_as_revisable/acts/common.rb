@@ -27,20 +27,10 @@ module FatJam
           has_many :branches, :class_name => base.class_name, :foreign_key => :revisable_branched_from_id
           belongs_to :branch_source, :class_name => base.class_name, :foreign_key => :revisable_branched_from_id
           after_save :execute_blocks_after_save
-        end
-        
-        # This aliases branch_source to branch_source_with_open_scope
-        # for proper scope wrapping.
-        base.alias_method_chain :branch_source, :open_scope  
+          disable_revisable_scope :branch_source
+        end        
       end
-      
-      # Wrap up branch_source in the appropriate scope.
-      def branch_source_with_open_scope(*args, &block) #:nodoc:
-        self.class.without_model_scope do
-          branch_source_without_open_scope(*args, &block)
-        end
-      end
-      
+            
       # Executes the blocks stored in an accessor after a save.
       def execute_blocks_after_save #:nodoc:
         return unless revisable_after_callback_blocks[:save]
@@ -158,7 +148,30 @@ module FatJam
         self.is_a? self.class.revisable_class
       end
       
-      module ClassMethods  
+      module ClassMethods
+        def disable_revisable_scope(*args)
+          args.each do |a|            
+            class_eval <<-EOT
+              def #{a.to_s}_with_open_scope(*args, &block)
+                assoc = self.class.reflect_on_association(#{a.inspect})
+                models = [self.class]
+                
+                if assoc.macro == :has_many
+                  models << (assoc.options[:class_name] ? assoc.options[:class_name] : #{a.inspect}.to_s.singularize.camelize).constantize
+                end
+                                
+                begin
+                  models.each {|m| m.scoped_model_enabled = false}
+                  #{a.to_s}_without_open_scope(*args, &block).reload
+                ensure
+                  models.each {|m| m.scoped_model_enabled = true}
+                end
+              end
+            EOT
+            alias_method_chain a, :open_scope
+          end
+        end
+        
         # Returns true if the revision should clone the given column.    
         def revisable_should_clone_column?(col) #:nodoc:
           return false if (REVISABLE_SYSTEM_COLUMNS + REVISABLE_UNREVISABLE_COLUMNS).member? col
