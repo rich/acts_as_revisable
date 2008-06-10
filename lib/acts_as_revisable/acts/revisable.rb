@@ -23,6 +23,9 @@ module FatJam
           attr_accessor :revisable_revision_class, :revisable_columns
         end
         
+        base.class_inheritable_hash :revisable_shared_objects
+        base.revisable_shared_objects = {}
+        
         base.instance_eval do
           attr_accessor :revisable_no_revision, :revisable_new_params, :revisable_force_revision, :revisable_revision
           
@@ -34,6 +37,7 @@ module FatJam
           before_create :before_revisable_create
           before_update :before_revisable_update
           after_update :after_revisable_update
+          after_save :clear_revisable_shared_objects!
           
           acts_as_scoped_model :find => {:conditions => {:revisable_is_current => true}}
           
@@ -342,9 +346,15 @@ module FatJam
       end
       
       def for_revision
-        
+        key = self.read_attribute(self.class.primary_key)
+        self.class.revisable_shared_objects[key] ||= {}
       end
       
+      def clear_revisable_shared_objects!
+        key = self.read_attribute(self.class.primary_key)
+        self.class.revisable_shared_objects.delete(key)
+      end
+            
       module ClassMethods
         # acts_as_revisable's override for with_scope that allows for
         # including revisions in the scope.

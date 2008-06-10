@@ -78,7 +78,7 @@ module FatJam
       end
       
       def from_revisable
-        
+        current_revision.for_revision
       end
       
       module ClassMethods
