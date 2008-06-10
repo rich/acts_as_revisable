@@ -68,6 +68,8 @@ module FatJam
       # revision_number. The exception is 0 (zero) which returns
       # the current record.
       def find_revision(by)
+        by = Integer(by) if by.is_a?(String) && by.match(/[0-9]+/)
+          
         case by
         when self.class.revision_class
           by
