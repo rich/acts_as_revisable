@@ -36,3 +36,9 @@ task :generate_gemspec do
   
   open("acts_as_revisable.gemspec", "w").write(spec.join("\n"))
 end
+
+desc "Install acts_as_revisable"
+task :install => :repackage do
+    options = FatJam::ActsAsRevisable::GemSpecOptions::HASH.clone
+    sh %{sudo gem install pkg/#{options[:name]}-#{spec.version} --no-rdoc --no-ri}
+end
