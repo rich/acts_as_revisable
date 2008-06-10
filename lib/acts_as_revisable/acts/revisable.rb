@@ -258,8 +258,6 @@ module FatJam
       
       # Returns the current revision_number or 0 if there are no revisions.
       def revision_number
-        revisions.first.revisable_number
-      rescue NoMethodError
         0
       end
       

@@ -40,6 +40,10 @@ module FatJam
         end
       end
       
+      def find_revision(*args)
+        current_revision.find_revision(*args)
+      end
+      
       # Return the revision prior to this one.
       def previous_revision
         self.class.find(:first, :conditions => {:revisable_original_id => revisable_original_id, :revisable_number => revisable_number - 1})

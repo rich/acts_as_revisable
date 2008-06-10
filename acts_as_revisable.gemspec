@@ -5,7 +5,7 @@ Gem::Specification.new do |s|
   s.summary = "acts_as_revisable enables revision tracking, querying, reverting and branching of ActiveRecord models. Inspired by acts_as_versioned."
   s.extra_rdoc_files = ["README.rdoc", "LICENSE"]
   s.email = "cavanaugh@fatjam.com"
-  s.version = "0.8.9"
+  s.version = "0.8.10"
   s.has_rdoc = true
   s.homepage = "http://github.com/fatjam/acts_as_revisable/tree/master"
   s.authors = ["Rich Cavanaugh of JamLab, LLC.", "Stephen Caudill of JamLab, LLC."]
