@@ -76,7 +76,11 @@ module FatJam
         self[:revisable_type] = current_revision[:type]
         self[:revisable_number] = (self.class.maximum(:revisable_number, :conditions => {:revisable_original_id => self[:revisable_original_id]}) || 0) + 1
       end
-            
+      
+      def from_revisable
+        
+      end
+      
       module ClassMethods
         # Returns the +revisable_class_name+ as configured in
         # +acts_as_revisable+.

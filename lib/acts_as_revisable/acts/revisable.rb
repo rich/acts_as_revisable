@@ -341,6 +341,10 @@ module FatJam
         self
       end
       
+      def for_revision
+        
+      end
+      
       module ClassMethods
         # acts_as_revisable's override for with_scope that allows for
         # including revisions in the scope.

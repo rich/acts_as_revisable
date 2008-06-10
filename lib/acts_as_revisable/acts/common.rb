@@ -156,7 +156,7 @@ module FatJam
                 assoc = self.class.reflect_on_association(#{a.inspect})
                 models = [self.class]
                 
-                if assoc.macro == :has_many
+                if [:has_many, :has_one].member? assoc.macro
                   models << (assoc.options[:class_name] ? assoc.options[:class_name] : #{a.inspect}.to_s.singularize.camelize).constantize
                 end
                                 
