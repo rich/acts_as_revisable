@@ -13,10 +13,10 @@ describe FatJam::ActsAsRevisable do
   end
   
   it "should have a pretty named association" do
-    lambda { @project.project_revisions }.should
+    lambda { @project.sessions }.should_not raise_error
   end
   
   it "should return all the revisions" do
     @project.revisions.size.should == 3
-  end    
+  end
 end

@@ -24,6 +24,12 @@ module FatJam
         def clone_belongs_to_association(association, to)
           to.send(association.macro, association.name, association.options.clone)
         end
+        
+        def clone_has_many_association(association, to)
+          options = association.options.clone
+          options[:association_foreign_key] ||= "revisable_original_id"
+          to.send(association.macro, association.name, options)
+        end
       end
     end
   end

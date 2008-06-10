@@ -41,12 +41,12 @@ module FatJam
       end
       
       # Return the revision prior to this one.
-      def previous
+      def previous_revision
         self.class.find(:first, :conditions => {:revisable_original_id => revisable_original_id, :revisable_number => revisable_number - 1})
       end
       
       # Return the revision after this one.
-      def next
+      def next_revision
         self.class.find(:first, :conditions => {:revisable_original_id => revisable_original_id, :revisable_number => revisable_number + 1})
       end
       
