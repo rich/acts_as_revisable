@@ -307,6 +307,7 @@ module FatJam
           run_callbacks(:after_revise)
         end
         force_revision!(false)
+        true
       end
       
       # Returns true if the _record_ (not just this instance 
