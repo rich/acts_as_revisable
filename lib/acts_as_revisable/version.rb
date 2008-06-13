@@ -3,7 +3,7 @@ module FatJam #:nodoc:
     module VERSION #:nodoc:
       MAJOR = 0
       MINOR = 8
-      TINY  = 10
+      TINY  = 11
 
       STRING = [MAJOR, MINOR, TINY].join('.')
     end
