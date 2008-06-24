@@ -148,6 +148,11 @@ module FatJam
         self.is_a? self.class.revisable_class
       end
       
+      # Accessor for revisable_number just to make external API more pleasant.
+      def revision_number
+        self[:revisable_number]
+      end
+      
       module ClassMethods
         def disable_revisable_scope(*args)
           args.each do |a|            

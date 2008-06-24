@@ -65,8 +65,7 @@ module FatJam
       # was the current record at the given time.
       # 
       # When passed an Integer it returns the revision with that
-      # revision_number. The exception is 0 (zero) which returns
-      # the current record.
+      # revision_number.
       def find_revision(by)
         by = Integer(by) if by.is_a?(String) && by.match(/[0-9]+/)
           
@@ -79,7 +78,7 @@ module FatJam
           revisions.first
         when Time
           revisions.find(:first, :conditions => ["? >= ? and ? <= ?", :revisable_revised_at, by, :revisable_current_at, by])
-        when 0
+        when self[:revisable_number]
           self
         else
           revisions.find_by_revisable_number(by)
@@ -255,12 +254,7 @@ module FatJam
           save!
         end
       end
-      
-      # Returns the current revision_number or 0 if there are no revisions.
-      def revision_number
-        0
-      end
-      
+            
       # acts_as_revisable's override for ActiveRecord::Base's #save!
       def save_with_revisable!(*args) #:nodoc:
         self.revisable_new_params ||= args.extract_options!
@@ -278,6 +272,7 @@ module FatJam
       # Set some defaults for a newly created +Revisable+ instance.
       def before_revisable_create #:nodoc:
         self[:revisable_is_current] = true
+        self[:revisable_number] = 1
       end
       
       # Checks whether or not a +Revisable+ should be revised.
@@ -301,7 +296,7 @@ module FatJam
       # Checks if an initialized revision_class has been stored
       # in the accessor. If it has been, this instance is saved.
       def after_revisable_update #:nodoc:
-        if self.revisable_revision
+        if self.revisable_revision          
           self.revisable_revision.save
           revisions.reload
           run_callbacks(:after_revise)
@@ -329,7 +324,11 @@ module FatJam
         rev = self.class.revision_class.new(self.revisable_new_params)
 
         rev.revisable_original_id = self.id
-
+        
+        new_revision_number = revisions.maximum(:revisable_number) + 1 rescue self.revisable_number
+        rev.revisable_number = new_revision_number
+        self.revisable_number = new_revision_number + 1
+        
         self.class.column_names.each do |col|
           next unless self.class.revisable_should_clone_column? col
           val = self.send("#{col}_changed?") ? self.send("#{col}_was") : self.send(col)

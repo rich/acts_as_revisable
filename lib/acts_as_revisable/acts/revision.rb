@@ -63,11 +63,6 @@ module FatJam
       def revision_name #:nodoc:
         self[:revisable_name]
       end
-    
-      # Accessor for revisable_number just to make external API more pleasant.
-      def revision_number #:nodoc:
-        self[:revisable_number]
-      end
       
       # Sets some initial values for a new revision.
       def revision_setup #:nodoc:

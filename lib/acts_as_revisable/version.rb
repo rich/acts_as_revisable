@@ -2,8 +2,8 @@ module FatJam #:nodoc:
   module ActsAsRevisable
     module VERSION #:nodoc:
       MAJOR = 0
-      MINOR = 8
-      TINY  = 11
+      MINOR = 9
+      TINY  = 0
 
       STRING = [MAJOR, MINOR, TINY].join('.')
     end
