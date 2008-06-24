@@ -176,7 +176,7 @@ module FatJam
         self.revisable_force_revision || false
       end
       
-      # Sets whether or not no revision should be created.
+      # Sets whether or not a revision should be created.
       def no_revision!(val=true) #:nodoc:
         self.revisable_no_revision = val
       end
@@ -254,7 +254,21 @@ module FatJam
           save!
         end
       end
-            
+      
+      def without_revisions!
+        return if in_revision? || !block_given?
+        
+        begin
+          no_revision!
+          in_revision!
+          yield
+          save!
+        ensure
+          in_revision!(false)
+          no_revision!(false)
+        end
+      end
+      
       # acts_as_revisable's override for ActiveRecord::Base's #save!
       def save_with_revisable!(*args) #:nodoc:
         self.revisable_new_params ||= args.extract_options!
