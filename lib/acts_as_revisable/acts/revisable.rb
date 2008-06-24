@@ -27,7 +27,7 @@ module FatJam
         base.revisable_shared_objects = {}
         
         base.instance_eval do
-          attr_accessor :revisable_no_revision, :revisable_new_params, :revisable_force_revision, :revisable_revision
+          attr_accessor :revisable_new_params, :revisable_revision
           
           define_callbacks :before_revise, :after_revise, :before_revert, :after_revert, :before_changeset, :after_changeset, :after_branch_created
           
@@ -168,22 +168,22 @@ module FatJam
       
       # Sets whether or not to force a revision.
       def force_revision!(val=true) #:nodoc:
-        self.revisable_force_revision = val
+        set_revisable_state(:force_revision, val)
       end
       
       # Returns true if a revision should be forced.
       def force_revision? #:nodoc:
-        self.revisable_force_revision || false
+        get_revisable_state(:force_revision) || false
       end
       
       # Sets whether or not a revision should be created.
       def no_revision!(val=true) #:nodoc:
-        self.revisable_no_revision = val
+        set_revisable_state(:no_revision, val)
       end
       
       # Returns true if no revision should be created.
       def no_revision? #:nodoc:
-        self.revisable_no_revision || false
+        get_revisable_state(:no_revision) || false
       end
             
       # Force an immediate revision whether or
