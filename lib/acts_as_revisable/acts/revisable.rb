@@ -37,7 +37,7 @@ module FatJam
           before_create :before_revisable_create
           before_update :before_revisable_update
           after_update :after_revisable_update
-          after_save :clear_revisable_shared_objects!
+          after_save :clear_revisable_shared_objects!, :unless => :is_reverting?
           
           acts_as_scoped_model :find => {:conditions => {:revisable_is_current => true}}
           
@@ -111,7 +111,8 @@ module FatJam
         options = args.extract_options!
     
         rev = find_revision(what)
-    
+        self.reverting_to, self.reverting_from = rev, self
+        
         unless rev.run_callbacks(:before_restore) { |r, o| r == false}
           raise ActiveRecord::RecordNotSaved
         end
@@ -130,6 +131,7 @@ module FatJam
         self
       ensure
         is_reverting!(false)
+        clear_revisable_shared_objects!
       end
     
       # Same as revert_to except it also saves the record.
@@ -364,6 +366,22 @@ module FatJam
         self.class.revisable_shared_objects[key] ||= {}
       end
       
+      def reverting_to
+        for_revision[:reverting_to]
+      end
+      
+      def reverting_to=(val)
+        for_revision[:reverting_to] = val
+      end
+      
+      def reverting_from
+        for_revision[:reverting_from]
+      end
+      
+      def reverting_from=(val)
+        for_revision[:reverting_from] = val
+      end
+
       def clear_revisable_shared_objects!
         key = self.read_attribute(self.class.primary_key)
         self.class.revisable_shared_objects.delete(key)

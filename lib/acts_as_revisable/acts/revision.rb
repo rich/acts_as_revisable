@@ -80,6 +80,22 @@ module FatJam
         current_revision.for_revision
       end
       
+      def reverting_from
+        from_revisable[:reverting_from]
+      end
+      
+      def reverting_from=(val)
+        from_revisable[:reverting_from] = val
+      end
+
+      def reverting_to
+        from_revisable[:reverting_to]
+      end
+      
+      def reverting_to=(val)
+        from_revisable[:reverting_to] = val
+      end
+
       module ClassMethods
         # Returns the +revisable_class_name+ as configured in
         # +acts_as_revisable+.
