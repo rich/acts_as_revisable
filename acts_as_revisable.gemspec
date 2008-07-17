@@ -2,7 +2,7 @@ Gem::Specification.new do |s|
   s.rdoc_options = ["--main", "README.rdoc"]
   s.summary = "acts_as_revisable enables revision tracking, querying, reverting and branching of ActiveRecord models. Inspired by acts_as_versioned."
   s.name = "acts_as_revisable"
-  s.version = "0.9.2"
+  s.version = "0.9.3"
   s.extra_rdoc_files = ["README.rdoc", "LICENSE"]
   s.email = "cavanaugh@fatjam.com"
   s.has_rdoc = true

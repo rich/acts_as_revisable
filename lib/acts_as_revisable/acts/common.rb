@@ -164,10 +164,12 @@ module FatJam
                 if [:has_many, :has_one].member? assoc.macro
                   models << (assoc.options[:class_name] ? assoc.options[:class_name] : #{a.inspect}.to_s.singularize.camelize).constantize
                 end
-                                
+                
                 begin
                   models.each {|m| m.scoped_model_enabled = false}
-                  #{a.to_s}_without_open_scope(*args, &block).reload
+                  if associated = #{a.to_s}_without_open_scope(*args, &block)
+                    associated.reload
+                  end
                 ensure
                   models.each {|m| m.scoped_model_enabled = true}
                 end
