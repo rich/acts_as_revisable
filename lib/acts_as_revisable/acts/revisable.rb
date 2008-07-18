@@ -70,6 +70,8 @@ module FatJam
         by = Integer(by) if by.is_a?(String) && by.match(/[0-9]+/)
           
         case by
+        when self.class
+          by
         when self.class.revision_class
           by
         when :first
@@ -84,7 +86,7 @@ module FatJam
           revisions.find_by_revisable_number(by)
         end
       end
-      
+            
       # Returns a revisable_class instance initialized with the record
       # found using find_revision.
       # 

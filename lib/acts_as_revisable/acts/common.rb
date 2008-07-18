@@ -153,6 +153,15 @@ module FatJam
         self[:revisable_number]
       end
       
+      def diffs(what)
+        what = current_revision.find_revision(what)
+        returning({}) do |changes|
+          self.class.revisable_class.revisable_watch_columns.each do |c|
+            changes[c] = [self[c], what[c]] unless self[c] == what[c]
+          end
+        end
+      end
+      
       module ClassMethods
         def disable_revisable_scope(*args)
           args.each do |a|            
