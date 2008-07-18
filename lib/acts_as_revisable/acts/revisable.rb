@@ -293,6 +293,7 @@ module FatJam
       
       # Checks whether or not a +Revisable+ should be revised.
       def should_revise? #:nodoc:
+        return false if new_record?
         return true if force_revision?
         return false if no_revision?
         return false unless self.changed?
