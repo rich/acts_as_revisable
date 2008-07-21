@@ -26,6 +26,7 @@ module FatJam
         
           define_callbacks :before_restore, :after_restore
           before_create :revision_setup
+          after_create :grab_my_branches
           
           [:current_revision, revisable_association_name.to_sym].each do |a|
             belongs_to a, :class_name => revisable_class_name, :foreign_key => :revisable_original_id
@@ -74,6 +75,10 @@ module FatJam
         self[:revisable_branched_from_id] = current_revision[:revisable_branched_from_id]
         self[:revisable_type] = current_revision[:type]
         self[:revisable_number] = (self.class.maximum(:revisable_number, :conditions => {:revisable_original_id => self[:revisable_original_id]}) || 0) + 1
+      end
+      
+      def grab_my_branches
+        self.class.revisable_class.update_all(["revisable_branched_from_id = ?", self[:id]], ["revisable_branched_from_id = ?", self[:revisable_original_id]])
       end
       
       def from_revisable
