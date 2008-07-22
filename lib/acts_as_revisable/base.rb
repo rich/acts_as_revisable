@@ -37,12 +37,13 @@ module FatJam
         # Performs the setup needed for both kinds of acts_as_revisable
         # models.
         def revisable_shared_setup(args, block)
-          self.send(:include, Common)
           class << self
             attr_accessor :revisable_options
           end
           options = args.extract_options!
           self.revisable_options = Options.new(options, &block)
+          
+          self.send(:include, Common)
         end
     end
   end
