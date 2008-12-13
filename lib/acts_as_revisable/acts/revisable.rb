@@ -315,7 +315,10 @@ module FatJam
       # Checks if an initialized revision_class has been stored
       # in the accessor. If it has been, this instance is saved.
       def after_revisable_update #:nodoc:
-        if self.revisable_revision          
+        if no_revision? # check and see if no_revision! was called in a callback 
+          self.revisable_revision = nil
+          return true
+        elsif self.revisable_revision
           self.revisable_revision.save
           revisions.reload
           run_callbacks(:after_revise)
