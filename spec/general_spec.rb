@@ -1,6 +1,6 @@
 require File.dirname(__FILE__) + '/spec_helper.rb'
 
-describe FatJam::ActsAsRevisable do  
+describe WithoutScope::ActsAsRevisable do  
   after(:each) do
     cleanup_db
   end

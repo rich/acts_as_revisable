@@ -38,10 +38,10 @@ shared_examples_for "common Options usage" do
   end
 end
 
-describe FatJam::ActsAsRevisable::Options do
+describe WithoutScope::ActsAsRevisable::Options do
   describe "with hash options" do
     before(:each) do
-      @options = FatJam::ActsAsRevisable::Options.new :one => 1, :yes => true, :no => false, :arr => [1,2,3]
+      @options = WithoutScope::ActsAsRevisable::Options.new :one => 1, :yes => true, :no => false, :arr => [1,2,3]
     end
     
     it_should_behave_like "common Options usage"
@@ -49,7 +49,7 @@ describe FatJam::ActsAsRevisable::Options do
   
   describe "with block options" do
     before(:each) do
-      @options = FatJam::ActsAsRevisable::Options.new do
+      @options = WithoutScope::ActsAsRevisable::Options.new do
         one 1
         yes true
         arr [1,2,3]
@@ -61,7 +61,7 @@ describe FatJam::ActsAsRevisable::Options do
   
   describe "with both block and hash options" do
     before(:each) do
-      @options = FatJam::ActsAsRevisable::Options.new(:yes => true, :arr => [1,2,3]) do
+      @options = WithoutScope::ActsAsRevisable::Options.new(:yes => true, :arr => [1,2,3]) do
         one 1
       end
     end
@@ -70,7 +70,7 @@ describe FatJam::ActsAsRevisable::Options do
     
     describe "the block should override the hash" do
       before(:each) do
-        @options = FatJam::ActsAsRevisable::Options.new(:yes => false, :one => 10, :arr => [1,2,3,4,5]) do
+        @options = WithoutScope::ActsAsRevisable::Options.new(:yes => false, :one => 10, :arr => [1,2,3,4,5]) do
           one 1
           yes true
           arr [1,2,3]

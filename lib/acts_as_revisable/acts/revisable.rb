@@ -432,7 +432,7 @@ module WithoutScope
         def find_with_revisions(*args)
           args << {} if args.grep(Hash).blank?
           args.grep(Hash).first.update({:with_revisions => true})
-          find_with_revisable(*args)
+          find(*args)
         end
       
         # Returns the +revision_class_name+ as configured in

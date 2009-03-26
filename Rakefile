@@ -14,7 +14,7 @@ Rake::RDocTask.new do |rdoc|
 end
 
 spec = Gem::Specification.new do |s|
-  FatJam::ActsAsRevisable::GemSpecOptions::HASH.each do |key, value|
+  WithoutScope::ActsAsRevisable::GemSpecOptions::HASH.each do |key, value|
     s.send("#{key.to_s}=",value)
   end
 end
@@ -25,7 +25,7 @@ end
 
 desc "Generate the static gemspec required for github."
 task :generate_gemspec do
-  options = FatJam::ActsAsRevisable::GemSpecOptions::HASH.clone
+  options = WithoutScope::ActsAsRevisable::GemSpecOptions::HASH.clone
   options[:name] = "acts_as_revisable"
   
   spec = ["Gem::Specification.new do |s|"]
@@ -39,6 +39,6 @@ end
 
 desc "Install acts_as_revisable"
 task :install => :repackage do
-    options = FatJam::ActsAsRevisable::GemSpecOptions::HASH.clone
+    options = WithoutScope::ActsAsRevisable::GemSpecOptions::HASH.clone
     sh %{sudo gem install pkg/#{options[:name]}-#{spec.version} --no-rdoc --no-ri}
 end
