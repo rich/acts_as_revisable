@@ -1,4 +1,5 @@
 require 'acts_as_revisable/options'
+require 'acts_as_revisable/quoted_columns'
 require 'acts_as_revisable/acts/common'
 require 'acts_as_revisable/acts/revision'
 require 'acts_as_revisable/acts/revisable'
