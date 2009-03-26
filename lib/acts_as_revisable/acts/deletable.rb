@@ -2,6 +2,9 @@ module WithoutScope
   module ActsAsRevisable
     module Deletable
       def self.included(base)        
+        base.instance_eval do
+          define_callbacks :before_revise_on_destroy, :after_revise_on_destroy
+        end
       end
       
       def destroy
@@ -19,7 +22,11 @@ module WithoutScope
         end
         
         self.revisable_revised_at = self.revisable_deleted_at
-        self.save(:without_revision => true)
+        
+        return false unless run_callbacks(:before_revise_on_destroy) { |r, o| r == false}
+        returning(self.save(:without_revision => true)) do
+          run_callbacks(:after_revise_on_destroy)
+        end
       end
     end
   end
