@@ -44,6 +44,7 @@ module WithoutScope
           self.revisable_options = Options.new(options, &block)
           
           self.send(:include, Common)
+          self.send(:include, WithoutScope::QuotedColumnConditions)
         end
     end
   end

@@ -14,6 +14,6 @@ describe "the quoted_columns extension" do
   end
   
   it "should not quote strings any differently" do
-    Project.send(:quote_bound_value, "what").should == Project.send(:quote_bound_value_with_quoted_column, "what")
+    Project.send(:quote_bound_value, "what").should == ActiveRecord::Base.send(:quote_bound_value, "what")
   end  
 end

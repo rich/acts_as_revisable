@@ -8,5 +8,4 @@ require 'acts_as_revisable/version.rb'
 require 'acts_as_revisable/quoted_columns'
 require 'acts_as_revisable/base'
 
-ActiveRecord::Base.send(:include, WithoutScope::QuotedColumnConditions)
 ActiveRecord::Base.send(:include, WithoutScope::ActsAsRevisable)

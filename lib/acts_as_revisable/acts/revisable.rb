@@ -75,7 +75,7 @@ module WithoutScope
           revisions.first
         when Time
           revisions.find(:first, :conditions => ["? >= ? and ? <= ?", :revisable_revised_at, by, :revisable_current_at, by])
-        when self[:revisable_number]
+        when self.revisable_number
           self
         else
           revisions.find_by_revisable_number(by)
@@ -285,7 +285,7 @@ module WithoutScope
       # Set some defaults for a newly created +Revisable+ instance.
       def before_revisable_create #:nodoc:
         self[:revisable_is_current] = true
-        self[:revisable_number] = 1
+        self.revision_number ||= 0
       end
       
       # Checks whether or not a +Revisable+ should be revised.
@@ -342,9 +342,9 @@ module WithoutScope
 
         rev.revisable_original_id = self.id
         
-        new_revision_number = revisions.maximum(:revisable_number) + 1 rescue self.revisable_number
-        rev.revisable_number = new_revision_number
-        self.revisable_number = new_revision_number + 1
+        new_revision_number = revisions.maximum(:revisable_number) + 1 rescue self.revision_number
+        rev.revision_number = new_revision_number
+        self.revision_number = new_revision_number + 1
         
         self.class.column_names.each do |col|
           next unless self.class.revisable_should_clone_column? col

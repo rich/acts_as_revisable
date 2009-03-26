@@ -146,7 +146,11 @@ module WithoutScope
       
       # Accessor for revisable_number just to make external API more pleasant.
       def revision_number
-        self[:revisable_number]
+        self[:revisable_number] ||= 0
+      end
+      
+      def revision_number=(value)
+        self[:revisable_number] = value
       end
       
       def diffs(what)
