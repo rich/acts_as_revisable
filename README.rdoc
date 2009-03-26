@@ -22,6 +22,8 @@ This plugin wouldn't exist without Rick Olsen's acts_as_versioned. AAV has been 
     * before_changeset
     * after_changeset
     * after_branch_created
+    * before_revise_on_destroy (when :on_destroy => :revise is set)
+    * after_revise_on_destroy (when :on_destroy => :revise is set)
   * revision models
     * before_restore
     * after_restore
