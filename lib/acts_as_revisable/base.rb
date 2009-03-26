@@ -4,7 +4,7 @@ require 'acts_as_revisable/acts/revision'
 require 'acts_as_revisable/acts/revisable'
 require 'acts_as_revisable/acts/deletable'
 
-module FatJam
+module WithoutScope
   # define the columns used internall by AAR
   REVISABLE_SYSTEM_COLUMNS = %w(revisable_original_id revisable_branched_from_id revisable_number revisable_name revisable_type revisable_current_at revisable_revised_at revisable_deleted_at revisable_is_current)
   

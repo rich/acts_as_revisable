@@ -1,14 +1,14 @@
-module FatJam #:nodoc:
+module WithoutScope #:nodoc:
   module ActsAsRevisable
     class GemSpecOptions
       HASH = {
-        :name => "fatjam-acts_as_revisable",
-        :version => FatJam::ActsAsRevisable::VERSION::STRING,
+        :name => "rich-acts_as_revisable",
+        :version => WithoutScope::ActsAsRevisable::VERSION::STRING,
         :summary => "acts_as_revisable enables revision tracking, querying, reverting and branching of ActiveRecord models. Inspired by acts_as_versioned.",
-        :email => "cavanaugh@fatjam.com",
-        :homepage => "http://github.com/fatjam/acts_as_revisable/tree/master",
+        :email => "rich@withoutscope.com",
+        :homepage => "http://github.com/rich/acts_as_revisable",
         :has_rdoc => true,
-        :authors => ["Rich Cavanaugh of JamLab, LLC.", "Stephen Caudill of JamLab, LLC."],
+        :authors => ["Rich Cavanaugh", "Stephen Caudill"],
         :files => %w( LICENSE README.rdoc Rakefile ) + Dir["{spec,lib,generators,rails}/**/*"],
         :rdoc_options => ["--main", "README.rdoc"],
         :extra_rdoc_files => ["README.rdoc", "LICENSE"]

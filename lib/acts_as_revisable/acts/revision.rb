@@ -1,6 +1,4 @@
-require 'acts_as_revisable/clone_associations'
-
-module FatJam
+module WithoutScope
   module ActsAsRevisable
     # This module is mixed into the revision classes.
     # 
@@ -20,10 +18,8 @@ module FatJam
         
         base.instance_eval do
           set_table_name(revisable_class.table_name)
-          acts_as_scoped_model :find => {:conditions => {:revisable_is_current => false}}
-          
-          CloneAssociations.clone_associations(revisable_class, self)
-        
+          default_scope :conditions => {:revisable_is_current => false}
+                  
           define_callbacks :before_restore, :after_restore
           before_create :revision_setup
           after_create :grab_my_branches
@@ -126,7 +122,7 @@ module FatJam
         # Returns the name of the association acts_as_revision
         # creates.
         def revisable_association_name #:nodoc:
-          revisable_class_name.downcase
+          revisable_class_name.underscore
         end
         
         # Returns an array of the associations that should be cloned.

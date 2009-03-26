@@ -1,4 +1,4 @@
-module FatJam
+module WithoutScope
   module ActsAsRevisable
     # This class provides for a flexible method of setting
     # options and querying them. This is especially useful

@@ -1,13 +1,10 @@
-module FatJam
+module WithoutScope
   module ActsAsRevisable
     module Deletable
       def self.included(base)        
-        base.instance_eval do
-          alias_method_chain :destroy, :revisable
-        end
       end
       
-      def destroy_with_revisable
+      def destroy
         now = Time.now
         
         prev = self.revisions.first

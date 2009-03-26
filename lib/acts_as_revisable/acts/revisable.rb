@@ -1,4 +1,4 @@
-module FatJam
+module WithoutScope
   module ActsAsRevisable
     
     # This module is mixed into the revision classes.
@@ -18,8 +18,6 @@ module FatJam
         base.send(:extend, ClassMethods)
                 
         class << base
-          alias_method_chain :find, :revisable
-          alias_method_chain :with_scope, :revisable
           attr_accessor :revisable_revision_class, :revisable_columns
         end
         
@@ -30,16 +28,13 @@ module FatJam
           attr_accessor :revisable_new_params, :revisable_revision
           
           define_callbacks :before_revise, :after_revise, :before_revert, :after_revert, :before_changeset, :after_changeset, :after_branch_created
-          
-          alias_method_chain :save, :revisable
-          alias_method_chain :save!, :revisable
-          
+                    
           before_create :before_revisable_create
           before_update :before_revisable_update
           after_update :after_revisable_update
           after_save :clear_revisable_shared_objects!, :unless => :is_reverting?
           
-          acts_as_scoped_model :find => {:conditions => {:revisable_is_current => true}}
+          default_scope :conditions => {:revisable_is_current => true}
           
           [:revisions, revisions_association_name.to_sym].each do |assoc|
             has_many assoc, (revisable_options.revision_association_options || {}).merge({:class_name => revision_class_name, :foreign_key => :revisable_original_id, :order => "#{quoted_table_name}.#{connection.quote_column_name(:revisable_number)} DESC", :dependent => :destroy})
@@ -274,17 +269,17 @@ module FatJam
       end
       
       # acts_as_revisable's override for ActiveRecord::Base's #save!
-      def save_with_revisable!(*args) #:nodoc:
+      def save!(*args) #:nodoc:
         self.revisable_new_params ||= args.extract_options!
         self.no_revision! if self.revisable_new_params.delete :without_revision
-        save_without_revisable!
+        super
       end
       
       # acts_as_revisable's override for ActiveRecord::Base's #save  
-      def save_with_revisable(*args) #:nodoc:
+      def save(*args) #:nodoc:
         self.revisable_new_params ||= args.extract_options!
         self.no_revision! if self.revisable_new_params.delete :without_revision
-        save_without_revisable(args)
+        super(args)
       end
       
       # Set some defaults for a newly created +Revisable+ instance.
@@ -402,15 +397,15 @@ module FatJam
         #   with_scope(:with_revisions => true) do
         #     ...
         #   end
-        def with_scope_with_revisable(*args, &block) #:nodoc:
+        def with_scope(*args, &block) #:nodoc:
           options = (args.grep(Hash).first || {})[:find]
 
           if options && options.delete(:with_revisions)
-            without_model_scope do
-              with_scope_without_revisable(*args, &block)
+            with_exclusive_scope do
+              super(*args, &block)
             end
           else
-            with_scope_without_revisable(*args, &block)
+            super(*args, &block)
           end
         end
         
@@ -420,15 +415,15 @@ module FatJam
         # ==== Example
         # 
         #   find(:all, :with_revisions => true)
-        def find_with_revisable(*args) #:nodoc:
+        def find(*args) #:nodoc:
           options = args.grep(Hash).first
         
           if options && options.delete(:with_revisions)
-            without_model_scope do
-              find_without_revisable(*args)
+            with_exclusive_scope do
+              super(*args)
             end
           else
-            find_without_revisable(*args)
+            super(*args)
           end
         end
         
@@ -460,7 +455,7 @@ module FatJam
         # Returns the name of the association acts_as_revisable
         # creates.
         def revisions_association_name #:nodoc:
-          revision_class_name.pluralize.downcase
+          revision_class_name.pluralize.underscore
         end
         
         # Returns an Array of the columns that are watched for changes.

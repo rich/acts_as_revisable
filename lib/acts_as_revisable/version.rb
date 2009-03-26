@@ -1,4 +1,4 @@
-module FatJam #:nodoc:
+module WithoutScope #:nodoc:
   module ActsAsRevisable
     module VERSION #:nodoc:
       MAJOR = 0

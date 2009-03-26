@@ -1,4 +1,4 @@
-module FatJam
+module WithoutScope
   module ActsAsRevisable
     # This module is mixed into the revision and revisable classes.
     # 
@@ -18,17 +18,12 @@ module FatJam
         base.class_inheritable_hash :revisable_current_states
         base.revisable_current_states = {}
         
-        class << base
-          alias_method_chain :instantiate, :revisable
-        end
-
         base.instance_eval do
           define_callbacks :before_branch, :after_branch      
           has_many :branches, (revisable_options.revision_association_options || {}).merge({:class_name => base.class_name, :foreign_key => :revisable_branched_from_id})
                     
           belongs_to :branch_source, :class_name => base.class_name, :foreign_key => :revisable_branched_from_id
           after_save :execute_blocks_after_save
-          disable_revisable_scope :branch_source, :branches
         end        
       end
             
@@ -163,32 +158,7 @@ module FatJam
         end
       end
       
-      module ClassMethods
-        def disable_revisable_scope(*args)
-          args.each do |a|            
-            class_eval <<-EOT
-              def #{a.to_s}_with_open_scope(*args, &block)
-                assoc = self.class.reflect_on_association(#{a.inspect})
-                models = [self.class]
-                
-                if [:has_many, :has_one].member? assoc.macro
-                  models << (assoc.options[:class_name] ? assoc.options[:class_name] : #{a.inspect}.to_s.singularize.camelize).constantize
-                end
-                
-                begin
-                  models.each {|m| m.scoped_model_enabled = false}
-                  if associated = #{a.to_s}_without_open_scope(*args, &block)
-                    associated.reload
-                  end
-                ensure
-                  models.each {|m| m.scoped_model_enabled = true}
-                end
-              end
-            EOT
-            alias_method_chain a, :open_scope
-          end
-        end
-        
+      module ClassMethods        
         # Returns true if the revision should clone the given column.    
         def revisable_should_clone_column?(col) #:nodoc:
           return false if (REVISABLE_SYSTEM_COLUMNS + REVISABLE_UNREVISABLE_COLUMNS).member? col
@@ -198,12 +168,12 @@ module FatJam
         # acts_as_revisable's override for instantiate so we can
         # return the appropriate type of model based on whether
         # or not the record is the current record.
-        def instantiate_with_revisable(record) #:nodoc:
+        def instantiate(record) #:nodoc:
           is_current = columns_hash["revisable_is_current"].type_cast(
                 record["revisable_is_current"])
 
           if (is_current && self == self.revisable_class) || (!is_current && self == self.revision_class)
-            return instantiate_without_revisable(record)
+            return super(record)
           end
 
           object = if is_current
