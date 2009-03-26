@@ -162,6 +162,10 @@ module WithoutScope
         end
       end
       
+      def deleted?
+        self.revisable_deleted_at.present?
+      end
+      
       module ClassMethods        
         # Returns true if the revision should clone the given column.    
         def revisable_should_clone_column?(col) #:nodoc:
