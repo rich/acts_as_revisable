@@ -61,6 +61,7 @@ class Person < ActiveRecord::Base
   
   acts_as_revisable do
     revision_class_name "OldPerson"
+    on_delete :revise
   end
 end
 
