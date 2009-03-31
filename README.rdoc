@@ -11,7 +11,9 @@ This plugin wouldn't exist without Rick Olsen's acts_as_versioned. AAV has been 
 == FEATURES:
 
 * Both the revisable and revision models must be explicitly defined.
-  Yes, this is a feature. The less magic needed the better. This allows you to build up your revision models just as you would any other.
+  Yes, this is a feature. The less magic needed the better. This allows you to build up your revision models just as you would any other. 
+  
+  If you absolutely need a generated revision model, you may pass ":generate_revision_class => true" to acts_as_revisable and it will generate the class at runtime for you. Think of this like scaffolding and not to be kept around for a real application.
 
 * Numerous custom callbacks for both revisable and revision models.
   * revisable models
@@ -35,7 +37,6 @@ This plugin wouldn't exist without Rick Olsen's acts_as_versioned. AAV has been 
   * Provides migration generators to add the revisable columns.
 * Grouping several revisable actions into a single revision (changeset).
 * Monitor all or just specified columns to trigger a revision.
-* Clone all or specified associations to the revision model.
 * Uses ActiveRecord's dirty attribute tracking.
 * Several ways to find revisions including:
   * revision number
@@ -74,7 +75,7 @@ Create the revision class:
 
   class Session < ActiveRecord::Base
     # we can accept the more standard hash syntax
-    acts_as_revision :revisable_class_name => "Project", :clone_associations => :all
+    acts_as_revision :revisable_class_name => "Project"
   end
 
 Some example usage:
@@ -156,10 +157,6 @@ Changesets:
   # our revision number has only incremented by one
   @project.revision_number        # => 3
   
-Associations have been cloned:
-
-  @project.owner === @previous.owner   # => true
-
 Maybe we don't want to be able to branch from revisions:
 
   class Session < ActiveRecord::Base

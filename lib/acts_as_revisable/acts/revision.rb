@@ -109,7 +109,7 @@ module WithoutScope
         # Returns the actual +Revisable+ class based on the 
         # #revisable_class_name.
         def revisable_class #:nodoc:
-          self.revisable_revisable_class ||= revisable_class_name.constantize
+          self.revisable_revisable_class ||= self.revisable_class_name.constantize
         end
         
         # Returns the revision_class which in this case is simply +self+.

@@ -36,6 +36,15 @@ def setup_db
       t.datetime :revisable_current_at, :revisable_revised_at, :revisable_deleted_at
       t.timestamps
     end
+    
+    create_table :foos do |t|
+      t.string :name, :revisable_name, :revisable_type
+      t.text :notes
+      t.boolean :revisable_is_current
+      t.integer :revisable_original_id, :revisable_branched_from_id, :revisable_number, :project_id
+      t.datetime :revisable_current_at, :revisable_revised_at, :revisable_deleted_at
+      t.timestamps
+    end
   end
 end
 
@@ -76,4 +85,8 @@ class Session < ActiveRecord::Base
     revisable_class_name "Project"
     clone_associations :all
   end
+end
+
+class Foo < ActiveRecord::Base
+  acts_as_revisable :generate_revision_class => true
 end

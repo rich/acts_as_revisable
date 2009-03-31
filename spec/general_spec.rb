@@ -9,6 +9,12 @@ describe WithoutScope::ActsAsRevisable do
     @project = Project.create(:name => "Rich", :notes => "this plugin's author")
   end
   
+  describe "with auto-generated revision class" do
+    it "should have a revision class" do
+      Foo.revision_class.should == FooRevision
+    end
+  end
+  
   describe "without revisions" do
     it "should have a revision_number of zero" do
       @project.revision_number.should be_zero
