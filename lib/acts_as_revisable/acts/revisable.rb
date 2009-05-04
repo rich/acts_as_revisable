@@ -194,11 +194,15 @@ module WithoutScope
       # Force an immediate revision whether or
       # not any columns have been modified.
       # 
+      # The +args+ catch-all argument is not used. It's primarily
+      # there to allow +revise!+ to be used directly as an association
+      # callback since association callbacks are passed an argument.
+      # 
       # ==== Callbacks
       # 
       # * +before_revise+ is called before the record is revised.
       # * +after_revise+ is called after the record is revised.
-      def revise!
+      def revise!(*args)
         return if in_revision?
         
         begin
