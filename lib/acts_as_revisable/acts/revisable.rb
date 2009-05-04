@@ -436,15 +436,7 @@ module WithoutScope
             super(*args)
           end
         end
-        
-        # Equivalent to:
-        #   find(..., :with_revisions => true)
-        def find_with_revisions(*args)
-          args << {} if args.grep(Hash).blank?
-          args.grep(Hash).first.update({:with_revisions => true})
-          find(*args)
-        end
-      
+              
         # Returns the +revision_class_name+ as configured in
         # +acts_as_revisable+.
         def revision_class_name #:nodoc:
