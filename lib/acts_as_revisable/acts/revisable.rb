@@ -312,7 +312,12 @@ module WithoutScope
       # and stores it in an accessor for later saving.
       def before_revisable_update #:nodoc:
         return unless should_revise?
-        return false unless run_callbacks(:before_revise) { |r, o| r == false}
+        in_revision!
+        
+        unless run_callbacks(:before_revise) { |r, o| r == false}
+          in_revision!(false)
+          return false
+        end
         
         self.revisable_revision = self.to_revision
       end
@@ -328,6 +333,7 @@ module WithoutScope
           revisions.reload
           run_callbacks(:after_revise)
         end
+        in_revision!(false)
         force_revision!(false)
         true
       end
