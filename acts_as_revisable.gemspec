@@ -1,5 +1,5 @@
 Gem::Specification.new do |s|
-  s.version = "1.0.1"
+  s.version = "1.0.2"
   s.authors = ["Rich Cavanaugh", "Stephen Caudill"]
   s.summary = "acts_as_revisable enables revision tracking, querying, reverting and branching of ActiveRecord models. Inspired by acts_as_versioned."
   s.has_rdoc = true
