@@ -1,13 +1,14 @@
-class Make<%= class_name.underscore.camelize %>Revisable < ActiveRecord::Migration
+<% table_name = class_name.underscore.pluralize -%>
+class Make<%= class_name.underscore.pluralize.camelize %>Revisable < ActiveRecord::Migration
   def self.up
-    <% cols.each do |c| -%>
-    add_column :<%= class_name.downcase.pluralize %>, :<%= c.first %>, :<%= c.last %>
+    <% cols.each do |column_name,column_type| -%>
+    add_column :<%= table_name %>, :<%= column_name %>, :<%= column_type %>
     <% end -%>
   end
 
   def self.down
-    <% cols.each do |c| -%>
-    remove_column :<%= class_name.downcase.pluralize %>, :<%= c.first %>
+    <% cols.each do |column_name,_| -%>
+    remove_column :<%= table_name %>, :<%= column_name %>
     <% end -%>
   end
 end
