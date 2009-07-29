@@ -70,6 +70,10 @@ describe WithoutScope::ActsAsRevisable do
       @project.sessions.size.should == 1
     end
     
+    it "should have a single revision with a revision_number of zero" do
+      @project.revisions.collect{ |rev| rev.revision_number }.should == [0]
+    end
+    
     it "should return an instance of the revision class" do
       @project.revisions.first.should be_an_instance_of(Session)
     end
@@ -78,6 +82,22 @@ describe WithoutScope::ActsAsRevisable do
       @project.revisions.first.name.should == "Rich"
     end    
   end
+  
+  describe "with multiple revisions" do
+    before(:each) do
+      @project.update_attribute(:name, "Stephen")
+      @project.update_attribute(:name, "Michael")
+    end
+    
+    it "should have a revision_number of two" do
+      @project.revision_number.should == 2
+    end
+    
+    it "should have revisions with revision_number values of zero and one" do
+      @project.revisions.collect{ |rev| rev.revision_number }.should == [1,0]
+    end
+  end
+      
   
   describe "with excluded columns modified" do
     before(:each) do
