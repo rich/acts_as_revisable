@@ -26,5 +26,9 @@ describe WithoutScope::ActsAsRevisable do
     it "should find revisions with conditions" do
       Project.find(:all, :conditions => {:name => "Rich"}, :with_revisions => true).should == [@project1.find_revision(:previous)]
     end
+
+		it "should find last revision" do
+			@project1.find_revision(:last).should == @project1.find_revision(:previous)
+		end
   end
 end

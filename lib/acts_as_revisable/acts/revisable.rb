@@ -77,7 +77,7 @@ module WithoutScope
           by
         when :first
           revisions.last
-        when :previous
+        when :previous, :last
           revisions.first
         when Time
           revisions.find(:first, :conditions => ["? >= ? and ? <= ?", :revisable_revised_at, by, :revisable_current_at, by])
