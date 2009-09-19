@@ -1,5 +1,6 @@
 require 'acts_as_revisable/options'
 require 'acts_as_revisable/quoted_columns'
+require 'acts_as_revisable/validations'
 require 'acts_as_revisable/acts/common'
 require 'acts_as_revisable/acts/revision'
 require 'acts_as_revisable/acts/revisable'
@@ -45,6 +46,7 @@ module WithoutScope
           self.revisable_options = Options.new(options, &block)
           
           self.send(:include, Common)
+          self.send(:extend, Validations) unless self.revisable_options.no_validation_scoping?
           self.send(:include, WithoutScope::QuotedColumnConditions)
         end
     end

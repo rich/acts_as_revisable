@@ -97,11 +97,15 @@ class Session < ActiveRecord::Base
 end
 
 class Foo < ActiveRecord::Base
-  acts_as_revisable :generate_revision_class => true
+  acts_as_revisable :generate_revision_class => true, :no_validation_scoping => true
+  
+  validates_uniqueness_of :name
 end
 
 class Post < ActiveRecord::Base
-  acts_as_revisable
+  acts_as_revisable 
+  
+  validates_uniqueness_of :name
 end
 
 class PostRevision < ActiveRecord::Base
