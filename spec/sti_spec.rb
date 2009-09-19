@@ -23,7 +23,7 @@ describe WithoutScope::ActsAsRevisable, "with single table inheritance" do
     
     it "revisable_type column is nil for the root type" do
       @post.revise!
-      @post.revisions(true).first.revisable_type.should be_nil
+      @post.revisions(true).first.revisable_type.should == 'Post'
     end
     
     it "revisable_type column is set properly" do

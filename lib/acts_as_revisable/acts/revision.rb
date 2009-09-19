@@ -71,7 +71,7 @@ module WithoutScope
         self[:revisable_current_at] = now + 1.second
         self[:revisable_is_current] = false
         self[:revisable_branched_from_id] = current_revision[:revisable_branched_from_id]
-        self[:revisable_type] = current_revision[:type]
+        self[:revisable_type] = current_revision[:type] || current_revision.class.name
         self[:revisable_number] = (self.class.maximum(:revisable_number, :conditions => {:revisable_original_id => self[:revisable_original_id]}) || 0) + 1
       end
       
