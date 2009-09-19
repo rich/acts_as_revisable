@@ -103,7 +103,7 @@ module WithoutScope
         # Returns the +revisable_class_name+ as configured in
         # +acts_as_revisable+.
         def revisable_class_name #:nodoc:
-          self.revisable_options.revisable_class_name || self.class_name.gsub(/Revision/, '')
+          self.revisable_options.revisable_class_name || self.name.gsub(/Revision/, '')
         end
       
         # Returns the actual +Revisable+ class based on the 

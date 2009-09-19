@@ -20,9 +20,9 @@ module WithoutScope
         
         base.instance_eval do
           define_callbacks :before_branch, :after_branch      
-          has_many :branches, (revisable_options.revision_association_options || {}).merge({:class_name => base.class_name, :foreign_key => :revisable_branched_from_id})
+          has_many :branches, (revisable_options.revision_association_options || {}).merge({:class_name => base.name, :foreign_key => :revisable_branched_from_id})
                     
-          belongs_to :branch_source, :class_name => base.class_name, :foreign_key => :revisable_branched_from_id
+          belongs_to :branch_source, :class_name => base.name, :foreign_key => :revisable_branched_from_id
           after_save :execute_blocks_after_save
         end        
       end

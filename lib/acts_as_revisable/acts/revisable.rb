@@ -40,11 +40,11 @@ module WithoutScope
             has_many assoc, (revisable_options.revision_association_options || {}).merge({:class_name => revision_class_name, :foreign_key => :revisable_original_id, :order => "#{quoted_table_name}.#{connection.quote_column_name(:revisable_number)} DESC", :dependent => :destroy})
           end
         end
-        
+
         if !Object.const_defined?(base.revision_class_name) && base.revisable_options.generate_revision_class?
-          Object.const_set(base.revision_class_name, Class.new(ActiveRecord::Base)).class_eval do
+          Object.const_set(base.revision_class_name, Class.new(ActiveRecord::Base)).instance_eval do
             acts_as_revision
-          end            
+          end
         end
       end
       
@@ -446,7 +446,7 @@ module WithoutScope
         # Returns the +revision_class_name+ as configured in
         # +acts_as_revisable+.
         def revision_class_name #:nodoc:
-          self.revisable_options.revision_class_name || "#{self.class_name}Revision"
+          self.revisable_options.revision_class_name || "#{self.name}Revision"
         end
       
         # Returns the actual +Revision+ class based on the 

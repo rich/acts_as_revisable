@@ -47,7 +47,7 @@ def setup_db
     end
     
     create_table :posts do |t|
-      t.string :name, :revisable_name, :revisable_type
+      t.string :name, :revisable_name, :revisable_type, :type
       t.boolean :revisable_is_current
       t.integer :revisable_original_id, :revisable_branched_from_id, :revisable_number
       t.datetime :revisable_current_at, :revisable_revised_at, :revisable_deleted_at
@@ -105,5 +105,13 @@ class Post < ActiveRecord::Base
 end
 
 class PostRevision < ActiveRecord::Base
+  acts_as_revision
+end
+
+class Article < Post
+  acts_as_revisable
+end
+
+class ArticleRevision < PostRevision
   acts_as_revision
 end
