@@ -21,6 +21,16 @@ describe WithoutScope::ActsAsRevisable, "with single table inheritance" do
       @post.revisions(true).first.class.should == PostRevision
     end
     
+    it "revisable_type column is nil for the root type" do
+      @post.revise!
+      @post.revisions(true).first.revisable_type.should be_nil
+    end
+    
+    it "revisable_type column is set properly" do
+      @article.revise!
+      @article.revisions(true).first.revisable_type.should == 'Article'
+    end
+    
     it "can find an article by name" do
       Article.find_by_name('an article').should_not be_nil
     end
