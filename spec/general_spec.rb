@@ -7,6 +7,7 @@ describe WithoutScope::ActsAsRevisable do
     
   before(:each) do
     @project = Project.create(:name => "Rich", :notes => "this plugin's author")
+    @post = Post.create(:name => 'a name')
   end
   
   describe "with auto-detected revision class" do
@@ -16,6 +17,11 @@ describe WithoutScope::ActsAsRevisable do
     
     it "should find the revisable class" do
       PostRevision.revisable_class.should == Post
+    end
+    
+    it "should use the revision class" do
+      @post.update_attribute(:name, 'another name')
+      @post.revisions(true).first.class.should == PostRevision
     end
   end
   
