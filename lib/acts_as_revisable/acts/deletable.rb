@@ -8,7 +8,7 @@ module WithoutScope
       end
       
       def destroy
-        now = Time.zone.now
+        now = Time.current
         
         prev = self.revisions.first
         self.revisable_deleted_at = now
