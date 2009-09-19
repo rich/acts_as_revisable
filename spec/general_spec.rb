@@ -9,6 +9,12 @@ describe WithoutScope::ActsAsRevisable do
     @project = Project.create(:name => "Rich", :notes => "this plugin's author")
   end
   
+  describe "with auto-detected revision class" do
+    it "should find the revision class" do
+      Post.revision_class.should == PostRevision
+    end
+  end
+  
   describe "with auto-generated revision class" do
     it "should have a revision class" do
       Foo.revision_class.should == FooRevision

@@ -45,6 +45,14 @@ def setup_db
       t.datetime :revisable_current_at, :revisable_revised_at, :revisable_deleted_at
       t.timestamps
     end
+    
+    create_table :posts do |t|
+      t.string :name, :revisable_name, :revisable_type
+      t.boolean :revisable_is_current
+      t.integer :revisable_original_id, :revisable_branched_from_id, :revisable_number
+      t.datetime :revisable_current_at, :revisable_revised_at, :revisable_deleted_at
+      t.timestamps
+    end
   end
 end
 
@@ -90,4 +98,12 @@ end
 
 class Foo < ActiveRecord::Base
   acts_as_revisable :generate_revision_class => true
+end
+
+class Post < ActiveRecord::Base
+  acts_as_revisable
+end
+
+class PostRevision < ActiveRecord::Base
+  acts_as_revision
 end
