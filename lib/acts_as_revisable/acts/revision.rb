@@ -65,7 +65,7 @@ module WithoutScope
       
       # Sets some initial values for a new revision.
       def revision_setup #:nodoc:
-        now = Time.zone.now
+        now = Time.current
         prev = current_revision.revisions.first
         prev.update_attribute(:revisable_revised_at, now) if prev
         self[:revisable_current_at] = now + 1.second
