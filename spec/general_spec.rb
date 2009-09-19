@@ -13,6 +13,10 @@ describe WithoutScope::ActsAsRevisable do
     it "should find the revision class" do
       Post.revision_class.should == PostRevision
     end
+    
+    it "should find the revisable class" do
+      PostRevision.revisable_class.should == Post
+    end
   end
   
   describe "with auto-generated revision class" do
