@@ -21,10 +21,9 @@ module WithoutScope
         base.instance_eval do
           define_callbacks :before_branch, :after_branch      
           has_many :branches, (revisable_options.revision_association_options || {}).merge({:class_name => base.name, :foreign_key => :revisable_branched_from_id})
-                    
-          belongs_to :branch_source, :class_name => base.name, :foreign_key => :revisable_branched_from_id
+
           after_save :execute_blocks_after_save
-        end        
+        end
       end
             
       # Executes the blocks stored in an accessor after a save.
@@ -97,6 +96,18 @@ module WithoutScope
       # Globally sets the reverting state of this record.
       def is_branching!(value=true) #:nodoc:
         set_revisable_state(:branching, value)
+      end
+
+      # XXX: This should be done with a "belongs_to" but the default
+      # scope on the target class prevents the find with revisions.
+      def branch_source
+        self[:branch_source] ||= if self[:revisable_branched_from_id]
+                                   self.class.find(self[:revisable_branched_from_id],
+                                                   :with_revisions => true)
+                                 else
+                                   nil
+                                 end
+                                   
       end
       
       # Returns true if the _record_ (not just this instance 
