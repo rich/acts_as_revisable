@@ -18,6 +18,18 @@ describe WithoutScope::ActsAsRevisable, "with branching" do
     @project.should == @project.branch.branch_source
   end
   
+  it "should always tie the branch to the correct version" do
+    b = @project.branch!
+    @project.revise!
+    prev = @project.find_revision(:last)
+    b.reload.branch_source.should == prev
+  end
+  
+  it "should have branches" do
+    b = @project.branch!
+    @project.branches.size.should == 1
+  end
+  
   it "should branch without saving" do
     @project.branch.should be_new_record
   end
