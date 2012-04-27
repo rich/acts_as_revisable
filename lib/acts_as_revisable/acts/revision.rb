@@ -17,7 +17,7 @@ module WithoutScope
         end
         
         base.instance_eval do
-          set_table_name(revisable_class.table_name)
+          self.table_name = revisable_class.table_name
           default_scope :conditions => {:revisable_is_current => false}
                   
           define_callbacks :before_restore, :after_restore
