@@ -16,16 +16,16 @@ module WithoutScope::QuotedColumnConditions
   end
   
   module ClassMethods
-    def quote_bound_value(value)
+    def quote_bound_value(value, c = connection)
       if value.is_a?(Symbol) && column_names.member?(value.to_s)
         # code borrowed from sanitize_sql_hash_for_conditions
         attr = value.to_s
         table_name = quoted_table_name
         
-        return "#{table_name}.#{connection.quote_column_name(attr)}"
+        return "#{table_name}.#{c.quote_column_name(attr)}"
       end
       
-      super(value)
+      super(value, c)
     end
   end
 end
