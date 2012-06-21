@@ -107,7 +107,7 @@ module WithoutScope
       def revert_to(what, *args, &block) #:yields:
         is_reverting!
         
-        unless run_callbacks(:before_revert) { |r, o| r == false}
+        unless run_callbacks(:before_revert)
           raise ActiveRecord::RecordNotSaved
         end
       
@@ -116,7 +116,7 @@ module WithoutScope
         rev = find_revision(what)
         self.reverting_to, self.reverting_from = rev, self
         
-        unless rev.run_callbacks(:before_restore) { |r, o| r == false}
+        unless rev.run_callbacks(:before_restore)
           raise ActiveRecord::RecordNotSaved
         end
     
@@ -240,7 +240,7 @@ module WithoutScope
         
         return yield(self) if in_revision?
         
-        unless run_callbacks(:before_changeset) { |r, o| r == false}
+        unless run_callbacks(:before_changeset)
           raise ActiveRecord::RecordNotSaved
         end
         
@@ -314,7 +314,7 @@ module WithoutScope
         return unless should_revise?
         in_revision!
         
-        unless run_callbacks(:before_revise) { |r, o| r == false}
+        unless run_callbacks(:before_revise)
           in_revision!(false)
           return false
         end

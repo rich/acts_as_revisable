@@ -23,7 +23,7 @@ module WithoutScope
         
         self.revisable_revised_at = self.revisable_deleted_at
         
-        return false unless run_callbacks(:before_revise_on_destroy) { |r, o| r == false}
+        return false unless run_callbacks(:before_revise_on_destroy)
         returning(self.save(:without_revision => true)) do
           run_callbacks(:after_revise_on_destroy)
         end
