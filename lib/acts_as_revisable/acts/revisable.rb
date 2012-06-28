@@ -1,6 +1,6 @@
 module WithoutScope
   module ActsAsRevisable
-    
+
     # This module is mixed into the revision classes.
     # 
     # ==== Callbacks
@@ -16,26 +16,26 @@ module WithoutScope
     module Revisable
       def self.included(base) #:nodoc:
         base.send(:extend, ClassMethods)
-                
+
         class << base
           attr_accessor :revisable_revision_class, :revisable_columns
         end
-        
+
         base.class_attribute :revisable_shared_objects
         base.revisable_shared_objects = {}
-        
+
         base.instance_eval do
           attr_accessor :revisable_new_params, :revisable_revision
-          
+
           define_callbacks :before_revise, :after_revise, :before_revert, :after_revert, :before_changeset, :after_changeset, :after_branch_created
-                    
+
           before_create :before_revisable_create
           before_update :before_revisable_update
           after_update :after_revisable_update
           after_save :clear_revisable_shared_objects!, :unless => :is_reverting?
-          
+
           default_scope :conditions => {:revisable_is_current => true}
-          
+
           [:revisions, revisions_association_name.to_sym].each do |assoc|
             has_many assoc, (revisable_options.revision_association_options || {}).merge({:class_name => revision_class_name, :foreign_key => :revisable_original_id, :order => "#{quoted_table_name}.#{connection.quote_column_name(:revisable_number)} DESC", :dependent => :destroy})
           end
@@ -47,7 +47,7 @@ module WithoutScope
           end
         end
       end
-      
+
       # Finds a specific revision of self.
       # 
       # The +by+ parameter can be a revision_class instance, 
@@ -69,7 +69,7 @@ module WithoutScope
       # revision_number.
       def find_revision(by)
         by = Integer(by) if by.is_a?(String) && by.match(/[0-9]+/)
-          
+
         case by
         when self.class
           by
@@ -87,7 +87,7 @@ module WithoutScope
           revisions.find_by_revisable_number(by)
         end
       end
-            
+
       # Returns a revisable_class instance initialized with the record
       # found using find_revision.
       # 
@@ -106,28 +106,28 @@ module WithoutScope
       # * +after_revise+ is called after the record is revised.
       def revert_to(what, *args, &block) #:yields:
         is_reverting!
-        
+
         unless run_callbacks(:before_revert)
           raise ActiveRecord::RecordNotSaved
         end
-      
+
         options = args.extract_options!
-    
+
         rev = find_revision(what)
         self.reverting_to, self.reverting_from = rev, self
-        
+
         unless rev.run_callbacks(:before_restore)
           raise ActiveRecord::RecordNotSaved
         end
-    
+
         self.class.column_names.each do |col|
           next unless self.class.revisable_should_clone_column? col
           self[col] = rev[col]
         end
-    
+
         self.no_revision! if options.delete :without_revision
         self.revisable_new_params = options
-        
+
         yield(self) if block_given?
         rev.run_callbacks(:after_restore)
         run_callbacks(:after_revert)
@@ -136,14 +136,14 @@ module WithoutScope
         is_reverting!(false)
         clear_revisable_shared_objects!
       end
-    
+
       # Same as revert_to except it also saves the record.
       def revert_to!(what, *args)
         revert_to(what, *args) do
           self.no_revision? ? save! : revise!
         end
       end
-      
+
       # Equivalent to:
       #   revert_to(:without_revision => true)
       def revert_to_without_revision(*args)
@@ -151,7 +151,7 @@ module WithoutScope
         options.update({:without_revision => true})
         revert_to(*(args << options))
       end
-      
+
       # Equivalent to:
       #   revert_to!(:without_revision => true)
       def revert_to_without_revision!(*args)
@@ -159,38 +159,38 @@ module WithoutScope
         options.update({:without_revision => true})
         revert_to!(*(args << options))
       end
-      
+
       # Globally sets the reverting state of this record.
       def is_reverting!(val=true) #:nodoc:
         set_revisable_state(:reverting, val)
       end
-      
+
       # Returns true if the _record_ (not just this instance 
       # of the record) is currently being reverted.
       def is_reverting?
         get_revisable_state(:reverting) || false
       end
-      
+
       # Sets whether or not to force a revision.
       def force_revision!(val=true) #:nodoc:
         set_revisable_state(:force_revision, val)
       end
-      
+
       # Returns true if a revision should be forced.
       def force_revision? #:nodoc:
         get_revisable_state(:force_revision) || false
       end
-      
+
       # Sets whether or not a revision should be created.
       def no_revision!(val=true) #:nodoc:
         set_revisable_state(:no_revision, val)
       end
-      
+
       # Returns true if no revision should be created.
       def no_revision? #:nodoc:
         get_revisable_state(:no_revision) || false
       end
-            
+
       # Force an immediate revision whether or
       # not any columns have been modified.
       # 
@@ -204,7 +204,7 @@ module WithoutScope
       # * +after_revise+ is called after the record is revised.
       def revise!(*args)
         return if in_revision?
-        
+
         begin
           force_revision!
           in_revision!
@@ -214,12 +214,12 @@ module WithoutScope
           force_revision!(false)
         end
       end
-            
+
       # Groups statements that could trigger several revisions into
       # a single revision. The revision is created once #save is called.
-      # 
+      #
       # ==== Example
-      # 
+      #
       #   @project.revision_number # => 1
       #   @project.changeset do |project|
       #     # each one of the following statements would 
@@ -237,17 +237,17 @@ module WithoutScope
       # * +after_changeset+ is called after a changeset block is called.      
       def changeset(&block)
         return unless block_given?
-        
+
         return yield(self) if in_revision?
-        
+
         unless run_callbacks(:before_changeset)
           raise ActiveRecord::RecordNotSaved
         end
-        
+
         begin
           force_revision!
           in_revision!
-        
+
           returning(yield(self)) do
             run_callbacks(:after_changeset)
           end
@@ -255,7 +255,7 @@ module WithoutScope
           in_revision!(false)       
         end
       end
-      
+
       # Same as +changeset+ except it also saves the record.
       def changeset!(&block)
         changeset do
@@ -263,10 +263,10 @@ module WithoutScope
           save!
         end
       end
-      
+
       def without_revisions!
         return if in_revision? || !block_given?
-        
+
         begin
           no_revision!
           in_revision!
@@ -277,27 +277,27 @@ module WithoutScope
           no_revision!(false)
         end
       end
-      
+
       # acts_as_revisable's override for ActiveRecord::Base's #save!
       def save!(*args) #:nodoc:
         self.revisable_new_params ||= args.extract_options!
         self.no_revision! if self.revisable_new_params.delete :without_revision
         super
       end
-      
-      # acts_as_revisable's override for ActiveRecord::Base's #save  
+
+      # acts_as_revisable's override for ActiveRecord::Base's #save
       def save(*args) #:nodoc:
         self.revisable_new_params ||= args.extract_options!
         self.no_revision! if self.revisable_new_params.delete :without_revision
         super(args)
       end
-      
+
       # Set some defaults for a newly created +Revisable+ instance.
       def before_revisable_create #:nodoc:
         self[:revisable_is_current] = true
         self.revision_number ||= 0
       end
-      
+
       # Checks whether or not a +Revisable+ should be revised.
       def should_revise? #:nodoc:
         return false if new_record?
@@ -306,22 +306,22 @@ module WithoutScope
         return false unless self.changed?
         !(self.changed.map(&:downcase) & self.class.revisable_watch_columns).blank?
       end
-      
+
       # Checks whether or not a revision should be stored.
       # If it should be, it initialized the revision_class
       # and stores it in an accessor for later saving.
       def before_revisable_update #:nodoc:
         return unless should_revise?
         in_revision!
-        
+
         unless run_callbacks(:before_revise)
           in_revision!(false)
           return false
         end
-        
+
         self.revisable_revision = self.to_revision
       end
-      
+
       # Checks if an initialized revision_class has been stored
       # in the accessor. If it has been, this instance is saved.
       def after_revisable_update #:nodoc:
@@ -337,7 +337,7 @@ module WithoutScope
         force_revision!(false)
         true
       end
-      
+
       # Returns true if the _record_ (not just this instance 
       # of the record) is currently being revised.
       def in_revision?
@@ -350,18 +350,18 @@ module WithoutScope
       def in_revision!(val=true) #:nodoc:
         set_revisable_state(:revision, val)
       end
-            
+
       # This returns a new +Revision+ instance with all the appropriate
       # values initialized.
       def to_revision #:nodoc:
         rev = self.class.revision_class.new(self.revisable_new_params)
 
         rev.revisable_original_id = self.id
-        
+
         new_revision_number = revisions.maximum(:revisable_number) + 1 rescue self.revision_number
         rev.revision_number = new_revision_number
         self.revision_number = new_revision_number + 1
-        
+
         self.class.column_names.each do |col|
           next unless self.class.revisable_should_clone_column? col
           val = self.send("#{col}_changed?") ? self.send("#{col}_was") : self.send(col)
@@ -372,29 +372,29 @@ module WithoutScope
 
         rev
       end
-      
+
       # This returns
       def current_revision
         self
       end
-      
+
       def for_revision
         key = self.read_attribute(self.class.primary_key)
         self.class.revisable_shared_objects[key] ||= {}
       end
-      
+
       def reverting_to
         for_revision[:reverting_to]
       end
-      
+
       def reverting_to=(val)
         for_revision[:reverting_to] = val
       end
-      
+
       def reverting_from
         for_revision[:reverting_from]
       end
-      
+
       def reverting_from=(val)
         for_revision[:reverting_from] = val
       end
@@ -403,7 +403,7 @@ module WithoutScope
         key = self.read_attribute(self.class.primary_key)
         self.class.revisable_shared_objects.delete(key)
       end
-            
+
       module ClassMethods
         # acts_as_revisable's override for with_scope that allows for
         # including revisions in the scope.
@@ -424,7 +424,7 @@ module WithoutScope
             super(*args, &block)
           end
         end
-        
+
         # acts_as_revisable's override for find that allows for
         # including revisions in the find.
         # 
@@ -433,7 +433,7 @@ module WithoutScope
         #   find(:all, :with_revisions => true)
         def find(*args) #:nodoc:
           options = args.grep(Hash).first
-        
+
           if options && options.delete(:with_revisions)
             with_exclusive_scope do
               super(*args)
@@ -442,36 +442,36 @@ module WithoutScope
             super(*args)
           end
         end
-              
+
         # Returns the +revision_class_name+ as configured in
         # +acts_as_revisable+.
         def revision_class_name #:nodoc:
           self.revisable_options.revision_class_name || "#{self.name}Revision"
         end
-      
+
         # Returns the actual +Revision+ class based on the 
         # #revision_class_name.
         def revision_class #:nodoc:
           self.revisable_revision_class ||= self.revision_class_name.constantize
         end
-        
+
         # Returns the revisable_class which in this case is simply +self+.
         def revisable_class #:nodoc:
           self
         end
-        
+
         # Returns the name of the association acts_as_revisable
         # creates.
         def revisions_association_name #:nodoc:
           revision_class_name.pluralize.underscore
         end
-        
+
         # Returns an Array of the columns that are watched for changes.
         def revisable_watch_columns #:nodoc:
           return self.revisable_columns unless self.revisable_columns.blank?
           return self.revisable_columns ||= [] if self.revisable_options.except == :all
           return self.revisable_columns ||= [self.revisable_options.only].flatten.map(&:to_s).map(&:downcase) unless self.revisable_options.only.blank?
-                    
+
           except = [self.revisable_options.except].flatten || []
           except += REVISABLE_SYSTEM_COLUMNS
           except += REVISABLE_UNREVISABLE_COLUMNS

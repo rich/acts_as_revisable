@@ -1,12 +1,34 @@
+# -*- encoding: utf-8 -*-
+lib = File.expand_path('../lib/', __FILE__)
+$:.unshift lib unless $:.include?(lib)
+
+require 'acts_as_revisable/version'
+
 Gem::Specification.new do |s|
-  s.summary = "acts_as_revisable enables revision tracking, querying, reverting and branching of ActiveRecord models. Inspired by acts_as_versioned."
-  s.has_rdoc = true
-  s.files = ["LICENSE", "README.rdoc", "Rakefile", "spec/associations_spec.rb", "spec/branch_spec.rb", "spec/deletable_spec.rb", "spec/find_spec.rb", "spec/general_spec.rb", "spec/options_spec.rb", "spec/quoted_columns_spec.rb", "spec/revert_spec.rb", "spec/spec.opts", "spec/spec_helper.rb", "spec/sti_spec.rb", "spec/validations_spec.rb", "lib/acts_as_revisable", "lib/acts_as_revisable/acts", "lib/acts_as_revisable/acts/common.rb", "lib/acts_as_revisable/acts/deletable.rb", "lib/acts_as_revisable/acts/revisable.rb", "lib/acts_as_revisable/acts/revision.rb", "lib/acts_as_revisable/base.rb", "lib/acts_as_revisable/gem_spec_options.rb", "lib/acts_as_revisable/options.rb", "lib/acts_as_revisable/quoted_columns.rb", "lib/acts_as_revisable/validations.rb", "lib/acts_as_revisable/version.rb", "lib/acts_as_revisable.rb", "generators/revisable_migration", "generators/revisable_migration/revisable_migration_generator.rb", "generators/revisable_migration/templates", "generators/revisable_migration/templates/migration.rb", "rails/init.rb"]
-  s.email = "rich@withoutscope.com"
-  s.rdoc_options = ["--main", "README.rdoc"]
-  s.version = "1.1.1"
-  s.homepage = "http://github.com/rich/acts_as_revisable"
-  s.extra_rdoc_files = ["README.rdoc", "LICENSE"]
-  s.name = "acts_as_revisable"
-  s.authors = ["Rich Cavanaugh", "Stephen Caudill"]
+  s.name        = "acts_as_revisable"
+  s.version     = WithoutScope::ActsAsRevisable::VERSION
+  s.platform    = Gem::Platform::RUBY
+  s.date        = "2012-06-28"
+  s.authors     = ["Rich Cavanaugh", "Stephen Caudill"]
+  s.email       = "rich@withoutscope.com"
+  s.homepage    = "http://github.com/chargify/acts_as_revisable"
+  s.summary     = "acts_as_revisable enables revision tracking, querying, reverting and branching of ActiveRecord models. Inspired by acts_as_versioned."
+
+  s.required_rubygems_version = ">= 1.3.6"
+
+  s.files         = `git ls-files`.split("\n")
+  s.test_files    = `git ls-files -- {test,spec,features}/*`.split("\n")
+  s.require_paths = ['lib']
+
+  # Runtime Dependencies
+  s.add_runtime_dependency('activesupport', '>= 3.2.3')
+  s.add_runtime_dependency('activerecord', '>= 3.2.3')
+
+  # Development Dependencies
+  s.add_development_dependency('rake', '~> 0.9.2')
+  s.add_development_dependency('rspec', '~> 2.10.0')
+  s.add_development_dependency('guard-rspec', '~> 1.1.0')
+  s.add_development_dependency('growl', '~> 1.0.3')
+  s.add_development_dependency('rb-fsevent', '~> 0.9.1')
+  s.add_development_dependency('sqlite3', '~> 1.3.6')
 end

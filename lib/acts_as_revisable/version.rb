@@ -1,11 +1,5 @@
-module WithoutScope #:nodoc:
+module WithoutScope
   module ActsAsRevisable
-    module VERSION #:nodoc:
-      MAJOR = 1
-      MINOR = 1
-      TINY  = 1
-
-      STRING = [MAJOR, MINOR, TINY].join('.')
-    end
+    VERSION = "1.2.0"
   end
 end
