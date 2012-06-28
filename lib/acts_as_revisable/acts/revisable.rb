@@ -289,7 +289,7 @@ module WithoutScope
       def save(*args) #:nodoc:
         self.revisable_new_params ||= args.extract_options!
         self.no_revision! if self.revisable_new_params.delete :without_revision
-        super(args)
+        super
       end
 
       # Set some defaults for a newly created +Revisable+ instance.
