@@ -354,7 +354,9 @@ module WithoutScope
       # This returns a new +Revision+ instance with all the appropriate
       # values initialized.
       def to_revision #:nodoc:
-        rev = self.class.revision_class.new(self.revisable_new_params)
+        options = self.revisable_new_params.dup
+        options.delete(:validate) # ActiveRecord::Base.new doesn't expect a :validate key
+        rev = self.class.revision_class.new(options)
 
         rev.revisable_original_id = self.id
 
