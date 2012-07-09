@@ -1,21 +1,24 @@
-begin
-  require 'spec'
-rescue LoadError
-  require 'rubygems'
-  gem 'rspec'
-  require 'spec'
-end
+$:.unshift File.expand_path('../lib', File.dirname(__FILE__))
 
-if ENV['EDGE_RAILS_PATH']
-  edge_path = File.expand_path(ENV['EDGE_RAILS_PATH'])
-  require File.join(edge_path, 'activesupport', 'lib', 'active_support')
-  require File.join(edge_path, 'activerecord', 'lib', 'active_record')
-end
-
-$:.unshift(File.dirname(__FILE__) + '/../lib')
 require 'acts_as_revisable'
+require 'rspec'
 
 ActiveRecord::Base.establish_connection(:adapter => "sqlite3", :database => ":memory:")
+
+RSpec.configure do |config|
+  config.filter_run :focused => true
+  config.run_all_when_everything_filtered = true
+  config.alias_example_to :fit, :focused => true
+  config.alias_example_to :xit, :disabled => true
+  config.color_enabled = true
+
+  # so we can use `:vcr` rathaner than `:vcr => true`;
+  # in RSpec 3 this will no longer be necessary.
+  config.treat_symbols_as_metadata_keys_with_true_values = true
+
+  config.before(:all) do
+  end
+end
 
 def setup_db
   ActiveRecord::Schema.define(:version => 1) do
@@ -27,7 +30,7 @@ def setup_db
       t.datetime :revisable_current_at, :revisable_revised_at, :revisable_deleted_at
       t.timestamps
     end
-    
+
     create_table :projects do |t|
       t.string :name, :unimportant, :revisable_name, :revisable_type
       t.text :notes
@@ -36,7 +39,7 @@ def setup_db
       t.datetime :revisable_current_at, :revisable_revised_at, :revisable_deleted_at
       t.timestamps
     end
-    
+
     create_table :foos do |t|
       t.string :name, :revisable_name, :revisable_type
       t.text :notes
@@ -45,7 +48,7 @@ def setup_db
       t.datetime :revisable_current_at, :revisable_revised_at, :revisable_deleted_at
       t.timestamps
     end
-    
+
     create_table :posts do |t|
       t.string :name, :revisable_name, :revisable_type, :type
       t.boolean :revisable_is_current
@@ -66,7 +69,7 @@ end
 
 class Person < ActiveRecord::Base
   belongs_to :project
-  
+
   acts_as_revisable do
     revision_class_name "OldPerson"
     on_delete :revise
@@ -82,7 +85,7 @@ end
 
 class Project < ActiveRecord::Base
   has_many :people
-  
+
   acts_as_revisable do
     revision_class_name "Session"
     except :unimportant
@@ -98,13 +101,13 @@ end
 
 class Foo < ActiveRecord::Base
   acts_as_revisable :generate_revision_class => true, :no_validation_scoping => true
-  
+
   validates_uniqueness_of :name
 end
 
 class Post < ActiveRecord::Base
   acts_as_revisable 
-  
+
   validates_uniqueness_of :name
 end
 

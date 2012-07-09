@@ -17,14 +17,14 @@ module WithoutScope
         end
         
         base.instance_eval do
-          set_table_name(revisable_class.table_name)
+          self.table_name = revisable_class.table_name
           default_scope :conditions => {:revisable_is_current => false}
                   
           define_callbacks :before_restore, :after_restore
           before_create :revision_setup
           after_create :grab_my_branches
           
-          named_scope :deleted, :conditions => ["? is not null", :revisable_deleted_at]
+          scope :deleted, :conditions => ["? is not null", :revisable_deleted_at]
           
           [:current_revision, revisable_association_name.to_sym].each do |a|
             belongs_to a, :class_name => revisable_class_name, :foreign_key => :revisable_original_id

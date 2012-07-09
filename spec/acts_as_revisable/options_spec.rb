@@ -1,4 +1,4 @@
-require File.dirname(__FILE__) + '/spec_helper.rb'
+require 'spec_helper'
 
 shared_examples_for "common Options usage" do
   it "should return a set value" do

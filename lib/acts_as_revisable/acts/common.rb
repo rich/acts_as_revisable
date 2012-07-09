@@ -12,10 +12,10 @@ module WithoutScope
       def self.included(base) #:nodoc:
         base.send(:extend, ClassMethods)
         
-        base.class_inheritable_hash :revisable_after_callback_blocks
+        base.class_attribute :revisable_after_callback_blocks
         base.revisable_after_callback_blocks = {}
         
-        base.class_inheritable_hash :revisable_current_states
+        base.class_attribute :revisable_current_states
         base.revisable_current_states = {}
         
         base.instance_eval do
@@ -57,7 +57,7 @@ module WithoutScope
       def branch(*args, &block)
         is_branching!
         
-        unless run_callbacks(:before_branch) { |r, o| r == false}
+        unless run_callbacks(:before_branch)
           raise ActiveRecord::RecordNotSaved
         end
 
