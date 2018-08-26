@@ -32,7 +32,7 @@ This plugin wouldn't exist without Rick Olsen's acts_as_versioned. AAV has been 
   * both revisable and revision models
     * before_branch
     * after_branch
-  These work like any other ActiveRecord callbacks. The before_* callbacks can stop the the action. This uses the Callbacks module in ActiveSupport.
+  These work like any other ActiveRecord callbacks. The before_* callbacks can stop the action. This uses the Callbacks module in ActiveSupport.
 * Works with a single table.
   * Provides migration generators to add the revisable columns.
 * Grouping several revisable actions into a single revision (changeset).
